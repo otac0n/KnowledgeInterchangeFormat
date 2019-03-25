@@ -6,7 +6,7 @@ namespace KnowledgeInterchangeFormat.Expressions
     using System.Text;
 
     /// <summary>
-    /// A <see cref="Constant"/> or a <see cref="Variable"/>.
+    /// A <see cref="Constant"/>, <see cref="Operator"/>, or <see cref="Variable"/>.
     /// </summary>
     public abstract class WordTerm : Term
     {
@@ -34,7 +34,7 @@ namespace KnowledgeInterchangeFormat.Expressions
             for (var i = 0; i < len; i++)
             {
                 var c = value[i];
-                var needsEscape = !(c == 33 || (c >= 36 && c <= 38) || (c >= 42 && c <= 43) || (c >= 45 && c <= 57) || (c >= 60 && c <= 90) || c == 95 || c == 126);
+                var needsEscape = !(c == 33 || (c >= 36 && c <= 38) || (c >= 42 && c <= 43) || (c >= 45 && c <= 58) || (c >= 60 && c <= 90) || c == 95 || c == 126);
                 if (needsEscape)
                 {
                     sb.Append('\\');

@@ -1,4 +1,7 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <RuleSet Name="KnowledgeInterchangeFormat" Description="Rules for the KnowledgeInterchangeFormat project." ToolsVersion="15.0">
-  <Include Path="..\Strict.ruleset" Action="Default" />
+  <Include Path="..\strict.ruleset" Action="Default" />
+  <Rules AnalyzerId="Microsoft.Analyzers.ManagedCodeAnalysis" RuleNamespace="Microsoft.Rules.Managed">
+    <Rule Id="CA1716" Action="None" />
+  </Rules>
 </RuleSet>

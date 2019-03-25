@@ -50,7 +50,7 @@ namespace KnowledgeInterchangeFormat.Expressions
                 this.SequenceVariable.ToString(sb);
             }
 
-            sb.Append(")");
+            sb.Append(')');
         }
     }
 }
