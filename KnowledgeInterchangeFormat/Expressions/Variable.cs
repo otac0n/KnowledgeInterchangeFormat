@@ -2,8 +2,6 @@
 
 namespace KnowledgeInterchangeFormat.Expressions
 {
-    using System.Text;
-
     /// <summary>
     /// An <see cref="IndividualVariable"/> or a <see cref="SequenceVariable"/>.
     /// </summary>
