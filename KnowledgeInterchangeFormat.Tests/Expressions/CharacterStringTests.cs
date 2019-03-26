@@ -30,7 +30,7 @@ namespace KnowledgeInterchangeFormat.Tests.Expressions
         public void Constructor_WhenGivenAValidString_CreatesAListWithTheCharactersAsElements(string value)
         {
             var subject = (ListTerm)new CharacterString(value);
-            Assert.Equal(value, subject.Terms.Select(t => ((CharacterReference)t).Character));
+            Assert.Equal(value, subject.Items.Select(t => ((CharacterReference)t).Character));
         }
 
         [Theory]

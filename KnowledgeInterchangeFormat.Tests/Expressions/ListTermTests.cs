@@ -9,34 +9,34 @@ namespace KnowledgeInterchangeFormat.Tests.Expressions
 
     public class ListTermTests
     {
-        public static IEnumerable<object[]> ValidTerms => new List<object[]>
+        public static IEnumerable<object[]> ValidItems => new List<object[]>
         {
             new object[] { new Term[] { new CharacterReference('a') } },
             new object[] { new Term[] { new CharacterReference('a'), new CharacterReference('b'), new CharacterReference('b') } },
             new object[] { new Term[] { new CharacterString("abc") } },
-            new object[] { new Term[] { new CharacterString("a"), new ListTerm(new Term[] { new CharacterReference('b'), }, null), new CharacterReference('c') } },
+            new object[] { new Term[] { new CharacterString("a"), new ListTerm(new Term[] { new CharacterReference('b') }, null), new CharacterReference('c') } },
         };
 
         [Fact]
         public void Constructor_WhenGivenANullList_ThrowsArgumentNullException()
         {
             var exception = (ArgumentNullException)Record.Exception(() => new ListTerm(null, null));
-            Assert.Equal("terms", exception.ParamName);
+            Assert.Equal("items", exception.ParamName);
         }
 
         [Theory]
-        [MemberData(nameof(ValidTerms))]
-        public void Constructor_WhenGivenValidContents_CreatesAListWithTheContentsAsElements(Term[] contents)
+        [MemberData(nameof(ValidItems))]
+        public void Constructor_WhenGivenValidItems_CreatesAListWithTheItemsAsElements(Term[] items)
         {
-            var subject = new ListTerm(contents, null);
+            var subject = new ListTerm(items, null);
 
-            Assert.Equal(contents, subject.Terms);
+            Assert.Equal(items, subject.Items);
         }
 
         [Fact]
         public void ToString_WhenNoSequenceVariableIsPresent_ReturnsExpectedOutput()
         {
-            var subject = new ListTerm(new Term[] { new CharacterString("a"), new ListTerm(new Term[] { new CharacterReference('b'), }, null), new CharacterReference('c') }, null);
+            var subject = new ListTerm(new Term[] { new CharacterString("a"), new ListTerm(new Term[] { new CharacterReference('b') }, null), new CharacterReference('c') }, null);
             Assert.Equal("(listof \"a\" (listof #\\b) #\\c)", subject.ToString());
         }
 

@@ -15,11 +15,11 @@ namespace KnowledgeInterchangeFormat.Expressions
         /// <summary>
         /// Initializes a new instance of the <see cref="ListTerm"/> class.
         /// </summary>
-        /// <param name="terms">The other terms contained in this list.</param>
+        /// <param name="items">The other items contained in this list.</param>
         /// <param name="sequenceVariable">An optional <see cref="SequenceVariable"/> containing additional items contained in this list.</param>
-        public ListTerm(IEnumerable<Term> terms, SequenceVariable sequenceVariable)
+        public ListTerm(IEnumerable<Term> items, SequenceVariable sequenceVariable)
         {
-            this.Terms = (terms ?? throw new ArgumentNullException(nameof(terms))).ToImmutableArray();
+            this.Items = (items ?? throw new ArgumentNullException(nameof(items))).ToImmutableArray();
             this.SequenceVariable = sequenceVariable;
         }
 
@@ -29,19 +29,19 @@ namespace KnowledgeInterchangeFormat.Expressions
         public SequenceVariable SequenceVariable { get; }
 
         /// <summary>
-        /// Gets the other terms contained in this list.
+        /// Gets the other items contained in this list.
         /// </summary>
-        public ImmutableArray<Term> Terms { get; }
+        public ImmutableArray<Term> Items { get; }
 
         /// <inheritdoc/>
         public override void ToString(StringBuilder sb)
         {
             sb.Append("(listof");
 
-            foreach (var term in this.Terms)
+            foreach (var item in this.Items)
             {
                 sb.Append(' ');
-                term.ToString(sb);
+                item.ToString(sb);
             }
 
             if (this.SequenceVariable != null)
