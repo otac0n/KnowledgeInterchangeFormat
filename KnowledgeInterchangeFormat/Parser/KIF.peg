@@ -1,0 +1,154 @@
+@namespace KnowledgeInterchangeFormat
+@classname KifParser
+@using System.Linq
+@using KnowledgeInterchangeFormat.Expressions
+@start knowledgeBase
+@members
+{
+    private static readonly HashSet<string> operators = new HashSet<string>
+    {
+        // termop
+        "VALUE", "LISTOF", "QUOTE", "IF", "COND",
+
+        // sentop
+        "HOLDS", "=", "/=", "NOT", "AND", "OR", "=>", "<=", "<=>", "FORALL", "EXISTS",
+
+        // defop
+        "DEFOBJECT", "DEFFUNCTION", "DEFRELATION", "DEFLOGICAL", ":=", ":->", ":<=", ":=>",
+    };
+}
+
+character = [\0-\x7F]
+empty =
+int <int> = d:("" digit+) { int.Parse(d) }
+
+upper = [A-Z]
+lower = [a-z]
+digit = [0-9]
+alpha = [-!$%&*+./:<=>?@_~]
+special = ["#'(),\\^`]
+white = [ \t\r\n\f]
+normal = upper / lower / digit / alpha
+
+word -memoize -lexical
+  = &normal w:(c:normal { c.ToUpperInvariant() } / "\\" c:character { c })+ { string.Concat(w) }
+
+charref <CharacterReference> -lexical = "#\\" c:character { new CharacterReference(c[0]) }
+
+string <CharacterString> -lexical = '"' s:quotable '"' { new CharacterString(s) }
+quotable -memoize = s:(strchar / "\\" c:character { c }) { string.Concat(s) }
+strchar = !["\\] character
+
+block <CharacterBlock> -lexical = "#" n:int "q"i v:#parse{{
+    if (state.Location + n <= state.Subject.Length)
+    {
+        var result = state.Subject.Substring(state.Location, n);
+        var startCursor = state;
+        var endCursor = state = state.Advance(n);
+        return new ParseResult<string>(startCursor, endCursor, result);
+    }
+
+    return null;
+}} { new CharacterBlock(v) }
+
+variable <Variable> = indvar / seqvar
+indvar <IndividualVariable> = n:word &{ n.StartsWith("?") } { new IndividualVariable(n) }
+seqvar <SequenceVariable> = n:word &{ n.StartsWith("@") } { new SequenceVariable(n) }
+
+operator <Operator> = w:word &{ operators.Contains(w) } { new Operator(w) }
+constant <Constant> = ![?@] w:word !{ operators.Contains(w) } { new Constant(w) }
+
+term <Term> = indvar / constant / charref / string / block / funterm / listterm / quoterm / logterm
+
+funterm <FunctionalTerm>
+  = "(" _ c:constant _ a:term<0,,_> _ s:seqvar? _ ")" { new ImplicitFunctionalTerm(c, a, s.SingleOrDefault()) }
+  / "(" _ o:operator &{ o.Name == "VALUE" } _ f:term _ a:term<0,,_> _ s:seqvar? _ ")" { new ExplicitFunctionalTerm(f, a, s.SingleOrDefault()) }
+
+listterm <ListTerm>
+  = "(" _ o:operator &{ o.Name == "LISTOF" } _ a:term<0,,_> _ s:seqvar? _ ")" { new ListTerm(a, s.SingleOrDefault()) }
+
+quoterm <Quotation>
+  = "(" _ o:operator &{ o.Name == "QUOTE" } _ l:listexpr _ ")" { new Quotation(l) }
+  / "'" _ l:listexpr { new Quotation(l) }
+listexpr <Expression> = atom / "(" _ l:listexpr<0,,_> _ ")" { new ListExpression(l) }
+atom <Expression>
+  = (variable / operator / constant)
+  / charref
+  / string
+  / block
+
+logterm <LogicalTerm>
+  = "(" _ o:operator &{ o.Name == "IF" } _ c:logpair<1,,_> _ d:term? _ ")" { new IfTerm(c, d.SingleOrDefault()) }
+  / "(" _ o:operator &{ o.Name == "COND" } _ c:logitem<0,,_> _ ")" { new ConditionalTerm(c) }
+logpair <LogicalPair> = c:sentence _ v:term { new LogicalPair(c, v) }
+logitem <LogicalPair> = "(" _ p:logpair _ ")" { p }
+
+sentence <Sentence> = c:constant { new ConstantSentence(c) } / equation / inequality / relsent / logsent / quantsent
+
+equation <Equation> = "(" _ o:operator &{ o.Name == "=" } _ l:term _ r:term _ ")" { new Equation(l, r) }
+inequality <Inequality> = "(" _ o:operator &{ o.Name == "/=" } _ l:term _ r:term _ ")" { new Inequality(l, r) }
+
+relsent <RelationalSentence>
+  = "(" _ c:constant _ t:term<0,,_> _ s:seqvar? _ ")" { new ImplicitRelationalSentence(c, t, s.SingleOrDefault()) }
+  / "(" _ o:operator &{ o.Name == "HOLDS" } _ r:term a:term<0,,_> _ s:seqvar? _ ")" { new ExplicitRelationalSentence(r, a, s.SingleOrDefault()) }
+
+logsent <LogicalSentence>
+  = "(" _ o:operator &{ o.Name == "NOT" } _ s:sentence       _ ")" { new Negation(s) }
+  / "(" _ o:operator &{ o.Name == "AND" } _ c:sentence<0,,_> _ ")" { new Conjunction(c) }
+  / "(" _ o:operator &{ o.Name == "OR"  } _ d:sentence<0,,_> _ ")" { new Disjunction(d) }
+  / "(" _ o:operator &{ o.Name == "=>"  } _ a:sentence<0,,_> _ c:sentence _ ")" { new Implication(a, c) }
+  / "(" _ o:operator &{ o.Name == "<="  } _ c:sentence _ a:sentence<0,,_> _ ")" { new ReverseImplication(c, a) }
+  / "(" _ o:operator &{ o.Name == "<=>" } _ l:sentence _ r:sentence _ ")" { new Equivalence(l, r) }
+
+quantsent <QuantifiedSentence>
+  = "(" _ o:operator &{ o.Name == "FORALL" } _ "(" _ v:varspec<1,,_> _ ")" _ s:sentence _ ")" { new UniversallyQuantifiedSentence(v, s) }
+  / "(" _ o:operator &{ o.Name == "EXISTS" } _ "(" _ v:varspec<1,,_> _ ")" _ s:sentence _ ")" { new ExistentiallyQuantifiedSentence(v, s) }
+
+varspec <VariableSpecification>
+  = v:variable { new VariableSpecification(v, null) }
+  / "(" _ v:variable _ c:constant _ ")" { new VariableSpecification(v, null) }
+
+definition <Definition> = unrestricted / complete / partial
+
+unrestricted <UnrestrictedDefinition>
+  = "(" _ o:operator &{ o.Name == "DEFOBJECT"   } _ c:constant _ d:string? _ s:sentence<0,,_> _ ")" { new UnrestrictedObjectDefinition(c, d.SingleOrDefault(), s) }
+  / "(" _ o:operator &{ o.Name == "DEFFUNCTION" } _ c:constant _ d:string? _ s:sentence<0,,_> _ ")" { new UnrestrictedFunctionDefinition(c, d.SingleOrDefault(), s) }
+  / "(" _ o:operator &{ o.Name == "DEFRELATION" } _ c:constant _ d:string? _ s:sentence<0,,_> _ ")" { new UnrestrictedRelationDefinition(c, d.SingleOrDefault(), s) }
+  / "(" _ o:operator &{ o.Name == "DEFLOGICAL"  } _ c:constant _ d:string? _ s:sentence<0,,_> _ ")" { new UnrestrictedLogicalDefinition(c, d.SingleOrDefault(), s) }
+
+complete <CompleteDefinition>
+  = "(" _ o:operator &{ o.Name == "DEFOBJECT"   } _ c:constant _                                          d:string? _ ":=" _ t:term _ ")" { new CompleteObjectDefinition(c, d.SingleOrDefault(), t) }
+  / "(" _ o:operator &{ o.Name == "DEFFUNCTION" } _ c:constant _ "(" _ a:indvar<0,,_> _ v:seqvar? _ ")" _ d:string? _ ":=" _ t:term _ ")" { new CompleteFunctionDefinition(c, d.SingleOrDefault(), a, v.SingleOrDefault(), t) }
+  / "(" _ o:operator &{ o.Name == "DEFRELATION" } _ c:constant _ "(" _ a:indvar<0,,_> _ v:seqvar? _ ")" _ d:string? _ ":=" _ s:sentence _ ")" { new CompleteRelationDefinition(c, d.SingleOrDefault(), a, v.SingleOrDefault(), s) }
+  / "(" _ o:operator &{ o.Name == "DEFLOGICAL"  } _ c:constant _                                          d:string? _ ":=" _ s:sentence _ ")" { new CompleteLogicalDefinition(c, d.SingleOrDefault(), s) }
+
+partial <PartialDefinition>
+  = "(" _ o:operator &{ o.Name == "DEFOBJECT"   } _ c:constant _                                          d:string? _ ":->" _ x:indvar _ ":=>" _ s:sentence _ ")" { new PartialObjectDefinition(c, d.SingleOrDefault(), x, s) }
+  / "(" _ o:operator &{ o.Name == "DEFOBJECT"   } _ c:constant _                                          d:string? _ ":->" _ x:indvar _ ":<=" _ s:sentence _ ")" { new ReversePartialObjectDefinition(c, d.SingleOrDefault(), x, s) }
+  / "(" _ o:operator &{ o.Name == "DEFFUNCTION" } _ c:constant _ "(" _ a:indvar<0,,_> _ v:seqvar? _ ")" _ d:string? _ ":->" _ x:indvar _ ":=>" _ s:sentence _ ")" { new PartialFunctionDefinition(c, d.SingleOrDefault(), a, v.SingleOrDefault(), x, s) }
+  / "(" _ o:operator &{ o.Name == "DEFFUNCTION" } _ c:constant _ "(" _ a:indvar<0,,_> _ v:seqvar? _ ")" _ d:string? _ ":->" _ x:indvar _ ":<=" _ s:sentence _ ")" { new ReversePartialFunctionDefinition(c, d.SingleOrDefault(), a, v.SingleOrDefault(), x, s) }
+  / "(" _ o:operator &{ o.Name == "DEFRELATION" } _ c:constant _ "(" _ a:indvar<0,,_> _ v:seqvar? _ ")" _ d:string? _                    ":=>" _ s:sentence _ ")" { new PartialRelationDefinition(c, d.SingleOrDefault(), a, v.SingleOrDefault(), s) }
+  / "(" _ o:operator &{ o.Name == "DEFRELATION" } _ c:constant _ "(" _ a:indvar<0,,_> _ v:seqvar? _ ")" _ d:string? _                    ":<=" _ s:sentence _ ")" { new ReversePartialRelationDefinition(c, d.SingleOrDefault(), a, v.SingleOrDefault(), s) }
+  / "(" _ o:operator &{ o.Name == "DEFLOGICAL"  } _ c:constant _                                          d:string? _                    ":=>" _ s:sentence _ ")" { new PartialLogicalDefinition(c, d.SingleOrDefault(), s) }
+  / "(" _ o:operator &{ o.Name == "DEFLOGICAL"  } _ c:constant _                                          d:string? _                    ":<=" _ s:sentence _ ")" { new ReversePartialLogicalDefinition(c, d.SingleOrDefault(), s) }
+
+form <Form> = sentence / definition
+
+knowledgeBase <KnowledgeBase> = _ f:form<0,,_> _ EOF { new KnowledgeBase(f) }
+
+_ -memoize = "" (white / EOL / comment)*
+
+comment -lexical
+  = ";" (!eolChar .)* EOL?
+
+EOL
+  = "\n"
+  / "\r\n"
+  / "\r"
+
+eolChar
+  = [\n\r]
+
+EOF
+  = !.
+  / unexpected:&. #error{ "Unexpected character " + unexpected }
