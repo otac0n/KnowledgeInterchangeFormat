@@ -125,7 +125,7 @@ namespace KnowledgeInterchangeFormat.Tests.Expressions
 
         [Theory]
         [MemberData(nameof(ValidArguments))]
-        public void Constructor_WhenGivenValidSentences_CreatesASentenceWithTheSpecifiedSentencesAndConsequents(Constant constant, CharacterString description, IndividualVariable[] parameters, SequenceVariable sequenceVariable, IndividualVariable variable, Sentence sentence)
+        public void Constructor_WhenGivenValidArguments_CreatesAnObjectWithTheSpecifiedProperties(Constant constant, CharacterString description, IndividualVariable[] parameters, SequenceVariable sequenceVariable, IndividualVariable variable, Sentence sentence)
         {
             var subject = new PartialFunctionDefinition(constant, description, parameters, sequenceVariable, variable, sentence);
 

@@ -63,7 +63,7 @@ namespace KnowledgeInterchangeFormat.Tests.Expressions
 
         [Theory]
         [MemberData(nameof(ValidArguments))]
-        public void Constructor_WhenGivenValidSentences_CreatesASentenceWithTheSpecifiedSentencesAndConsequents(Term function, IndividualVariable[] arguments, SequenceVariable sequenceVariable)
+        public void Constructor_WhenGivenValidArguments_CreatesAnObjectWithTheSpecifiedProperties(Term function, IndividualVariable[] arguments, SequenceVariable sequenceVariable)
         {
             var subject = new ExplicitFunctionalTerm(function, arguments, sequenceVariable);
 

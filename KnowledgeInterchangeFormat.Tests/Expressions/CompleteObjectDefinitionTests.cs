@@ -64,7 +64,7 @@ namespace KnowledgeInterchangeFormat.Tests.Expressions
 
         [Theory]
         [MemberData(nameof(ValidArguments))]
-        public void Constructor_WhenGivenValidSentences_CreatesASentenceWithTheSpecifiedSentencesAndConsequents(Constant constant, CharacterString description, Term term)
+        public void Constructor_WhenGivenValidArguments_CreatesAnObjectWithTheSpecifiedProperties(Constant constant, CharacterString description, Term term)
         {
             var subject = new CompleteObjectDefinition(constant, description, term);
 

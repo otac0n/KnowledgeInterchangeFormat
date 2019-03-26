@@ -48,7 +48,7 @@ namespace KnowledgeInterchangeFormat.Tests.Expressions
 
         [Theory]
         [MemberData(nameof(ValidSentencePairs))]
-        public void Constructor_WhenGivenValidSentences_CreatesASentenceWithTheSpecifiedAntecedentsAndConsequents(Sentence consequent, Sentence[] antecedents)
+        public void Constructor_WhenGivenValidArguments_CreatesAnObjectWithTheSpecifiedProperties(Sentence consequent, Sentence[] antecedents)
         {
             var subject = new ReverseImplication(consequent, antecedents);
 

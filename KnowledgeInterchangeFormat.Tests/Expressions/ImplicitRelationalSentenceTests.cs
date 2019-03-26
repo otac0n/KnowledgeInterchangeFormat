@@ -64,7 +64,7 @@ namespace KnowledgeInterchangeFormat.Tests.Expressions
 
         [Theory]
         [MemberData(nameof(ValidArguments))]
-        public void Constructor_WhenGivenValidSentences_CreatesASentenceWithTheSpecifiedSentencesAndConsequents(Constant relation, IndividualVariable[] arguments, SequenceVariable sequenceVariable)
+        public void Constructor_WhenGivenValidArguments_CreatesAnObjectWithTheSpecifiedProperties(Constant relation, IndividualVariable[] arguments, SequenceVariable sequenceVariable)
         {
             var subject = new ImplicitRelationalSentence(relation, arguments, sequenceVariable);
 

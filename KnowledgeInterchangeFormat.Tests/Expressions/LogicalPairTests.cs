@@ -47,7 +47,7 @@ namespace KnowledgeInterchangeFormat.Tests.Expressions
 
         [Theory]
         [MemberData(nameof(ValidArguments))]
-        public void Constructor_WhenGivenValidSentences_CreatesASentenceWithTheSpecifiedConditionAndValues(Sentence condition, Term value)
+        public void Constructor_WhenGivenValidArguments_CreatesAnObjectWithTheSpecifiedProperties(Sentence condition, Term value)
         {
             var subject = new LogicalPair(condition, value);
 

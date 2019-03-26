@@ -40,7 +40,7 @@ namespace KnowledgeInterchangeFormat.Tests.Expressions
 
         [Theory]
         [MemberData(nameof(ValidTermPairs))]
-        public void Constructor_WhenGivenValidTerms_CreatesATermWithTheSpecifiedTerm(Term left, Term right)
+        public void Constructor_WhenGivenValidArguments_CreatesAnObjectWithTheSpecifiedProperties(Term left, Term right)
         {
             var subject = new Inequality(left, right);
 

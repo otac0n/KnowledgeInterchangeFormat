@@ -40,7 +40,7 @@ namespace KnowledgeInterchangeFormat.Tests.Expressions
 
         [Theory]
         [MemberData(nameof(ValidSentencePairs))]
-        public void Constructor_WhenGivenValidSentences_CreatesASentenceWithTheSpecifiedSentence(Sentence left, Sentence right)
+        public void Constructor_WhenGivenValidArguments_CreatesAnObjectWithTheSpecifiedProperties(Sentence left, Sentence right)
         {
             var subject = new Equivalence(left, right);
 

@@ -28,7 +28,7 @@ namespace KnowledgeInterchangeFormat.Tests.Expressions
 
         [Theory]
         [MemberData(nameof(ValidItems))]
-        public void Constructor_WhenGivenValidItems_CreatesAListWithTheItemsAsElements(Expression[] items)
+        public void Constructor_WhenGivenValidArguments_CreatesAnObjectWithTheSpecifiedProperties(Expression[] items)
         {
             var subject = new ListExpression(items);
 

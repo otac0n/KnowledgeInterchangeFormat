@@ -26,7 +26,7 @@ namespace KnowledgeInterchangeFormat.Tests.Expressions
 
         [Theory]
         [MemberData(nameof(ValidPairs))]
-        public void Constructor_WhenGivenValidSentences_CreatesASentenceWithTheSpecifiedConditionAndValues(LogicalPair[] pairs)
+        public void Constructor_WhenGivenValidArguments_CreatesAnObjectWithTheSpecifiedProperties(LogicalPair[] pairs)
         {
             var subject = new ConditionalTerm(pairs);
 
