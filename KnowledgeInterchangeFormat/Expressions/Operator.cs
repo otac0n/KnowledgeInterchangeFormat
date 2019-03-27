@@ -10,9 +10,10 @@ namespace KnowledgeInterchangeFormat.Expressions
         /// <summary>
         /// Initializes a new instance of the <see cref="Operator"/> class.
         /// </summary>
-        /// <param name="name">The name of the operator.</param>
-        public Operator(string name)
-            : base(name)
+        /// <param name="id">The id of the operator.</param>
+        /// <param name="name">The optional display name of the operator.</param>
+        public Operator(string id, string name = null)
+            : base(id, name)
         {
         }
     }

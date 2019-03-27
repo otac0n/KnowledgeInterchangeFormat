@@ -4,35 +4,43 @@ namespace KnowledgeInterchangeFormat.Tests.Expressions
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using KnowledgeInterchangeFormat.Expressions;
     using Xunit;
 
     public class IndividualVariableTests
     {
-        public static IEnumerable<object[]> ValidNames { get; } = new List<object[]>
+        public static IEnumerable<object[]> ValidIds { get; } = new List<object[]>
         {
             new object[] { "?OK" },
             new object[] { "?VAR" },
         };
 
+        public static IEnumerable<object[]> ValidIdNamePairs =>
+            from ids in ValidIds
+            let id = (string)ids.Single()
+            from name in new[] { null, id, id.ToLowerInvariant() }.Distinct()
+            select new[] { id, name };
+
         [Fact]
-        public void Constructor_WhenGivenANullString_ThrowsArgumentNullException()
+        public void Constructor_WhenGivenANullId_ThrowsArgumentNullException()
         {
             var exception = (ArgumentNullException)Record.Exception(() => new IndividualVariable(null));
-            Assert.Equal("name", exception.ParamName);
+            Assert.Equal("id", exception.ParamName);
         }
 
         [Theory]
-        [MemberData(nameof(ValidNames))]
-        public void Constructor_WhenGivenAValidString_CreatesVariableWithTheSpecifiedName(string value)
+        [MemberData(nameof(ValidIdNamePairs))]
+        public void Constructor_WhenGivenAValidId_CreatesVariableWithTheSpecifiedId(string id, string name)
         {
-            var subject = new IndividualVariable(value);
-            Assert.Equal(value, subject.Name);
+            var subject = new IndividualVariable(id, name);
+            Assert.Equal(id, subject.Id);
+            Assert.Equal(name ?? id, subject.Name);
         }
 
         [Theory]
-        [MemberData(nameof(ValidNames))]
-        public void ToString_WhenEscapingIsNotRequired_ReturnsTheOriginalName(string value)
+        [MemberData(nameof(ValidIds))]
+        public void ToString_WhenEscapingIsNotRequired_ReturnsTheOriginalId(string value)
         {
             var subject = new IndividualVariable(value);
 

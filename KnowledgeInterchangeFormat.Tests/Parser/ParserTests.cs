@@ -9,7 +9,7 @@ namespace KnowledgeInterchangeFormat.Tests.Parser
     {
         public static IEnumerable<object[]> CanonicalExpressions => new List<object[]>
         {
-            new object[] { "(ROLE O)\r\n(ROLE X)" },
+            new object[] { "(role o)\r\n(role x)" },
         };
 
         [Theory]

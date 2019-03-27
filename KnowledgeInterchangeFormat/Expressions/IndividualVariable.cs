@@ -10,9 +10,10 @@ namespace KnowledgeInterchangeFormat.Expressions
         /// <summary>
         /// Initializes a new instance of the <see cref="IndividualVariable"/> class.
         /// </summary>
-        /// <param name="name">The name of the variable.</param>
-        public IndividualVariable(string name)
-            : base(name)
+        /// <param name="id">The name of the variable.</param>
+        /// <param name="name">The optional display name of the variable.</param>
+        public IndividualVariable(string id, string name = null)
+            : base(id, name)
         {
         }
     }

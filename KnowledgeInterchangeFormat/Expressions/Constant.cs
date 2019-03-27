@@ -10,9 +10,10 @@ namespace KnowledgeInterchangeFormat.Expressions
         /// <summary>
         /// Initializes a new instance of the <see cref="Constant"/> class.
         /// </summary>
-        /// <param name="name">The name of the constant.</param>
-        public Constant(string name)
-            : base(name)
+        /// <param name="id">The id of the constant.</param>
+        /// <param name="name">The optional display name of the constant.</param>
+        public Constant(string id, string name = null)
+            : base(id, name)
         {
         }
     }

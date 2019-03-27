@@ -4,12 +4,13 @@ namespace KnowledgeInterchangeFormat.Tests.Expressions
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using KnowledgeInterchangeFormat.Expressions;
     using Xunit;
 
     public class OperatorTests
     {
-        public static IEnumerable<object[]> ValidNames { get; } = Array.ConvertAll(
+        public static IEnumerable<object[]> ValidIds { get; } = Array.ConvertAll(
             new object[]
             {
                 "VALUE", "LISTOF", "QUOTE", "IF", "COND",
@@ -18,28 +19,35 @@ namespace KnowledgeInterchangeFormat.Tests.Expressions
             },
             n => new object[] { n });
 
+        public static IEnumerable<object[]> ValidIdNamePairs =>
+            from ids in ValidIds
+            let id = (string)ids.Single()
+            from name in new[] { null, id, id.ToLowerInvariant() }.Distinct()
+            select new[] { id, name };
+
         [Fact]
-        public void Constructor_WhenGivenANullString_ThrowsArgumentNullException()
+        public void Constructor_WhenGivenANullId_ThrowsArgumentNullException()
         {
             var exception = (ArgumentNullException)Record.Exception(() => new Operator(null));
-            Assert.Equal("name", exception.ParamName);
+            Assert.Equal("id", exception.ParamName);
         }
 
         [Theory]
-        [MemberData(nameof(ValidNames))]
-        public void Constructor_WhenGivenAValidString_CreatesOperatorWithTheSpecifiedName(string value)
+        [MemberData(nameof(ValidIdNamePairs))]
+        public void Constructor_WhenGivenAValidId_CreatesOperatorWithTheSpecifiedId(string id, string name)
         {
-            var subject = new Operator(value);
-            Assert.Equal(value, subject.Name);
+            var subject = new Operator(id, name);
+            Assert.Equal(id, subject.Id);
+            Assert.Equal(name ?? id, subject.Name);
         }
 
         [Theory]
-        [MemberData(nameof(ValidNames))]
-        public void ToString_Always_ReturnsExpectedOutput(string value)
+        [MemberData(nameof(ValidIds))]
+        public void ToString_Always_ReturnsExpectedOutput(string id)
         {
-            var subject = new Operator(value);
+            var subject = new Operator(id);
 
-            Assert.Equal(value, subject.ToString());
+            Assert.Equal(id, subject.ToString());
         }
     }
 }

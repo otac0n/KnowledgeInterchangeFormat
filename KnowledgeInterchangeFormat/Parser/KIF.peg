@@ -30,8 +30,14 @@ special = ["#'(),\\^`]
 white = [ \t\r\n\f]
 normal = upper / lower / digit / alpha
 
-word -memoize -lexical
-  = &normal w:(c:normal { c.ToUpperInvariant() } / "\\" c:character { c })+ { string.Concat(w) }
+word <Tuple<string, string>> -memoize -lexical
+  = &normal w:(<Tuple<string, string>>
+    c:normal           { Tuple.Create(c.ToUpperInvariant(), c) }
+    / "\\" c:character { Tuple.Create(c, c) }
+  )+ { Tuple.Create(
+    string.Concat(w.Select(c => c.Item1)),
+    string.Concat(w.Select(c => c.Item2)))
+  }
 
 charref <CharacterReference> -lexical = "#\\" c:character { new CharacterReference(c[0]) }
 
@@ -52,23 +58,23 @@ block <CharacterBlock> -lexical = "#" n:int "q"i v:#parse{{
 }} { new CharacterBlock(v) }
 
 variable <Variable> = indvar / seqvar
-indvar <IndividualVariable> = n:word &{ n.StartsWith("?") } { new IndividualVariable(n) }
-seqvar <SequenceVariable> = n:word &{ n.StartsWith("@") } { new SequenceVariable(n) }
+indvar <IndividualVariable> = n:word &{ n.Item1.StartsWith("?") } { new IndividualVariable(n.Item1, n.Item2) }
+seqvar <SequenceVariable> = n:word &{ n.Item1.StartsWith("@") } { new SequenceVariable(n.Item1, n.Item2) }
 
-operator <Operator> = w:word &{ operators.Contains(w) } { new Operator(w) }
-constant <Constant> = ![?@] w:word !{ operators.Contains(w) } { new Constant(w) }
+operator <Operator> = w:word &{ operators.Contains(w.Item1) } { new Operator(w.Item1, w.Item2) }
+constant <Constant> = ![?@] w:word !{ operators.Contains(w.Item1) } { new Constant(w.Item1, w.Item2) }
 
 term <Term> = indvar / constant / charref / string / block / funterm / listterm / quoterm / logterm
 
 funterm <FunctionalTerm>
   = "(" _ c:constant _ a:term<0,,_> _ s:seqvar? _ ")" { new ImplicitFunctionalTerm(c, a, s.SingleOrDefault()) }
-  / "(" _ o:operator &{ o.Name == "VALUE" } _ f:term _ a:term<0,,_> _ s:seqvar? _ ")" { new ExplicitFunctionalTerm(f, a, s.SingleOrDefault()) }
+  / "(" _ o:operator &{ o.Id == "VALUE" } _ f:term _ a:term<0,,_> _ s:seqvar? _ ")" { new ExplicitFunctionalTerm(f, a, s.SingleOrDefault()) }
 
 listterm <ListTerm>
-  = "(" _ o:operator &{ o.Name == "LISTOF" } _ a:term<0,,_> _ s:seqvar? _ ")" { new ListTerm(a, s.SingleOrDefault()) }
+  = "(" _ o:operator &{ o.Id == "LISTOF" } _ a:term<0,,_> _ s:seqvar? _ ")" { new ListTerm(a, s.SingleOrDefault()) }
 
 quoterm <Quotation>
-  = "(" _ o:operator &{ o.Name == "QUOTE" } _ l:listexpr _ ")" { new Quotation(l) }
+  = "(" _ o:operator &{ o.Id == "QUOTE" } _ l:listexpr _ ")" { new Quotation(l) }
   / "'" _ l:listexpr { new Quotation(l) }
 listexpr <Expression> = atom / "(" _ l:listexpr<0,,_> _ ")" { new ListExpression(l) }
 atom <Expression>
@@ -78,31 +84,31 @@ atom <Expression>
   / block
 
 logterm <LogicalTerm>
-  = "(" _ o:operator &{ o.Name == "IF" } _ c:logpair<1,,_> _ d:term? _ ")" { new IfTerm(c, d.SingleOrDefault()) }
-  / "(" _ o:operator &{ o.Name == "COND" } _ c:logitem<0,,_> _ ")" { new ConditionalTerm(c) }
+  = "(" _ o:operator &{ o.Id == "IF" } _ c:logpair<1,,_> _ d:term? _ ")" { new IfTerm(c, d.SingleOrDefault()) }
+  / "(" _ o:operator &{ o.Id == "COND" } _ c:logitem<0,,_> _ ")" { new ConditionalTerm(c) }
 logpair <LogicalPair> = c:sentence _ v:term { new LogicalPair(c, v) }
 logitem <LogicalPair> = "(" _ p:logpair _ ")" { p }
 
 sentence <Sentence> = c:constant { new ConstantSentence(c) } / equation / inequality / relsent / logsent / quantsent
 
-equation <Equation> = "(" _ o:operator &{ o.Name == "=" } _ l:term _ r:term _ ")" { new Equation(l, r) }
-inequality <Inequality> = "(" _ o:operator &{ o.Name == "/=" } _ l:term _ r:term _ ")" { new Inequality(l, r) }
+equation <Equation> = "(" _ o:operator &{ o.Id == "=" } _ l:term _ r:term _ ")" { new Equation(l, r) }
+inequality <Inequality> = "(" _ o:operator &{ o.Id == "/=" } _ l:term _ r:term _ ")" { new Inequality(l, r) }
 
 relsent <RelationalSentence>
   = "(" _ c:constant _ t:term<0,,_> _ s:seqvar? _ ")" { new ImplicitRelationalSentence(c, t, s.SingleOrDefault()) }
-  / "(" _ o:operator &{ o.Name == "HOLDS" } _ r:term a:term<0,,_> _ s:seqvar? _ ")" { new ExplicitRelationalSentence(r, a, s.SingleOrDefault()) }
+  / "(" _ o:operator &{ o.Id == "HOLDS" } _ r:term a:term<0,,_> _ s:seqvar? _ ")" { new ExplicitRelationalSentence(r, a, s.SingleOrDefault()) }
 
 logsent <LogicalSentence>
-  = "(" _ o:operator &{ o.Name == "NOT" } _ s:sentence       _ ")" { new Negation(s) }
-  / "(" _ o:operator &{ o.Name == "AND" } _ c:sentence<0,,_> _ ")" { new Conjunction(c) }
-  / "(" _ o:operator &{ o.Name == "OR"  } _ d:sentence<0,,_> _ ")" { new Disjunction(d) }
-  / "(" _ o:operator &{ o.Name == "=>"  } _ a:sentence<0,,_> _ c:sentence _ ")" { new Implication(a, c) }
-  / "(" _ o:operator &{ o.Name == "<="  } _ c:sentence _ a:sentence<0,,_> _ ")" { new ReverseImplication(c, a) }
-  / "(" _ o:operator &{ o.Name == "<=>" } _ l:sentence _ r:sentence _ ")" { new Equivalence(l, r) }
+  = "(" _ o:operator &{ o.Id == "NOT" } _ s:sentence       _ ")" { new Negation(s) }
+  / "(" _ o:operator &{ o.Id == "AND" } _ c:sentence<0,,_> _ ")" { new Conjunction(c) }
+  / "(" _ o:operator &{ o.Id == "OR"  } _ d:sentence<0,,_> _ ")" { new Disjunction(d) }
+  / "(" _ o:operator &{ o.Id == "=>"  } _ a:sentence<0,,_> _ c:sentence _ ")" { new Implication(a, c) }
+  / "(" _ o:operator &{ o.Id == "<="  } _ c:sentence _ a:sentence<0,,_> _ ")" { new ReverseImplication(c, a) }
+  / "(" _ o:operator &{ o.Id == "<=>" } _ l:sentence _ r:sentence _ ")" { new Equivalence(l, r) }
 
 quantsent <QuantifiedSentence>
-  = "(" _ o:operator &{ o.Name == "FORALL" } _ "(" _ v:varspec<1,,_> _ ")" _ s:sentence _ ")" { new UniversallyQuantifiedSentence(v, s) }
-  / "(" _ o:operator &{ o.Name == "EXISTS" } _ "(" _ v:varspec<1,,_> _ ")" _ s:sentence _ ")" { new ExistentiallyQuantifiedSentence(v, s) }
+  = "(" _ o:operator &{ o.Id == "FORALL" } _ "(" _ v:varspec<1,,_> _ ")" _ s:sentence _ ")" { new UniversallyQuantifiedSentence(v, s) }
+  / "(" _ o:operator &{ o.Id == "EXISTS" } _ "(" _ v:varspec<1,,_> _ ")" _ s:sentence _ ")" { new ExistentiallyQuantifiedSentence(v, s) }
 
 varspec <VariableSpecification>
   = v:variable { new VariableSpecification(v, null) }
@@ -111,26 +117,26 @@ varspec <VariableSpecification>
 definition <Definition> = unrestricted / complete / partial
 
 unrestricted <UnrestrictedDefinition>
-  = "(" _ o:operator &{ o.Name == "DEFOBJECT"   } _ c:constant _ d:string? _ s:sentence<0,,_> _ ")" { new UnrestrictedObjectDefinition(c, d.SingleOrDefault(), s) }
-  / "(" _ o:operator &{ o.Name == "DEFFUNCTION" } _ c:constant _ d:string? _ s:sentence<0,,_> _ ")" { new UnrestrictedFunctionDefinition(c, d.SingleOrDefault(), s) }
-  / "(" _ o:operator &{ o.Name == "DEFRELATION" } _ c:constant _ d:string? _ s:sentence<0,,_> _ ")" { new UnrestrictedRelationDefinition(c, d.SingleOrDefault(), s) }
-  / "(" _ o:operator &{ o.Name == "DEFLOGICAL"  } _ c:constant _ d:string? _ s:sentence<0,,_> _ ")" { new UnrestrictedLogicalDefinition(c, d.SingleOrDefault(), s) }
+  = "(" _ o:operator &{ o.Id == "DEFOBJECT"   } _ c:constant _ d:string? _ s:sentence<0,,_> _ ")" { new UnrestrictedObjectDefinition(c, d.SingleOrDefault(), s) }
+  / "(" _ o:operator &{ o.Id == "DEFFUNCTION" } _ c:constant _ d:string? _ s:sentence<0,,_> _ ")" { new UnrestrictedFunctionDefinition(c, d.SingleOrDefault(), s) }
+  / "(" _ o:operator &{ o.Id == "DEFRELATION" } _ c:constant _ d:string? _ s:sentence<0,,_> _ ")" { new UnrestrictedRelationDefinition(c, d.SingleOrDefault(), s) }
+  / "(" _ o:operator &{ o.Id == "DEFLOGICAL"  } _ c:constant _ d:string? _ s:sentence<0,,_> _ ")" { new UnrestrictedLogicalDefinition(c, d.SingleOrDefault(), s) }
 
 complete <CompleteDefinition>
-  = "(" _ o:operator &{ o.Name == "DEFOBJECT"   } _ c:constant _                                          d:string? _ ":=" _ t:term _ ")" { new CompleteObjectDefinition(c, d.SingleOrDefault(), t) }
-  / "(" _ o:operator &{ o.Name == "DEFFUNCTION" } _ c:constant _ "(" _ a:indvar<0,,_> _ v:seqvar? _ ")" _ d:string? _ ":=" _ t:term _ ")" { new CompleteFunctionDefinition(c, d.SingleOrDefault(), a, v.SingleOrDefault(), t) }
-  / "(" _ o:operator &{ o.Name == "DEFRELATION" } _ c:constant _ "(" _ a:indvar<0,,_> _ v:seqvar? _ ")" _ d:string? _ ":=" _ s:sentence _ ")" { new CompleteRelationDefinition(c, d.SingleOrDefault(), a, v.SingleOrDefault(), s) }
-  / "(" _ o:operator &{ o.Name == "DEFLOGICAL"  } _ c:constant _                                          d:string? _ ":=" _ s:sentence _ ")" { new CompleteLogicalDefinition(c, d.SingleOrDefault(), s) }
+  = "(" _ o:operator &{ o.Id == "DEFOBJECT"   } _ c:constant _                                          d:string? _ ":=" _ t:term _ ")" { new CompleteObjectDefinition(c, d.SingleOrDefault(), t) }
+  / "(" _ o:operator &{ o.Id == "DEFFUNCTION" } _ c:constant _ "(" _ a:indvar<0,,_> _ v:seqvar? _ ")" _ d:string? _ ":=" _ t:term _ ")" { new CompleteFunctionDefinition(c, d.SingleOrDefault(), a, v.SingleOrDefault(), t) }
+  / "(" _ o:operator &{ o.Id == "DEFRELATION" } _ c:constant _ "(" _ a:indvar<0,,_> _ v:seqvar? _ ")" _ d:string? _ ":=" _ s:sentence _ ")" { new CompleteRelationDefinition(c, d.SingleOrDefault(), a, v.SingleOrDefault(), s) }
+  / "(" _ o:operator &{ o.Id == "DEFLOGICAL"  } _ c:constant _                                          d:string? _ ":=" _ s:sentence _ ")" { new CompleteLogicalDefinition(c, d.SingleOrDefault(), s) }
 
 partial <PartialDefinition>
-  = "(" _ o:operator &{ o.Name == "DEFOBJECT"   } _ c:constant _                                          d:string? _ ":->" _ x:indvar _ ":=>" _ s:sentence _ ")" { new PartialObjectDefinition(c, d.SingleOrDefault(), x, s) }
-  / "(" _ o:operator &{ o.Name == "DEFOBJECT"   } _ c:constant _                                          d:string? _ ":->" _ x:indvar _ ":<=" _ s:sentence _ ")" { new ReversePartialObjectDefinition(c, d.SingleOrDefault(), x, s) }
-  / "(" _ o:operator &{ o.Name == "DEFFUNCTION" } _ c:constant _ "(" _ a:indvar<0,,_> _ v:seqvar? _ ")" _ d:string? _ ":->" _ x:indvar _ ":=>" _ s:sentence _ ")" { new PartialFunctionDefinition(c, d.SingleOrDefault(), a, v.SingleOrDefault(), x, s) }
-  / "(" _ o:operator &{ o.Name == "DEFFUNCTION" } _ c:constant _ "(" _ a:indvar<0,,_> _ v:seqvar? _ ")" _ d:string? _ ":->" _ x:indvar _ ":<=" _ s:sentence _ ")" { new ReversePartialFunctionDefinition(c, d.SingleOrDefault(), a, v.SingleOrDefault(), x, s) }
-  / "(" _ o:operator &{ o.Name == "DEFRELATION" } _ c:constant _ "(" _ a:indvar<0,,_> _ v:seqvar? _ ")" _ d:string? _                    ":=>" _ s:sentence _ ")" { new PartialRelationDefinition(c, d.SingleOrDefault(), a, v.SingleOrDefault(), s) }
-  / "(" _ o:operator &{ o.Name == "DEFRELATION" } _ c:constant _ "(" _ a:indvar<0,,_> _ v:seqvar? _ ")" _ d:string? _                    ":<=" _ s:sentence _ ")" { new ReversePartialRelationDefinition(c, d.SingleOrDefault(), a, v.SingleOrDefault(), s) }
-  / "(" _ o:operator &{ o.Name == "DEFLOGICAL"  } _ c:constant _                                          d:string? _                    ":=>" _ s:sentence _ ")" { new PartialLogicalDefinition(c, d.SingleOrDefault(), s) }
-  / "(" _ o:operator &{ o.Name == "DEFLOGICAL"  } _ c:constant _                                          d:string? _                    ":<=" _ s:sentence _ ")" { new ReversePartialLogicalDefinition(c, d.SingleOrDefault(), s) }
+  = "(" _ o:operator &{ o.Id == "DEFOBJECT"   } _ c:constant _                                          d:string? _ ":->" _ x:indvar _ ":=>" _ s:sentence _ ")" { new PartialObjectDefinition(c, d.SingleOrDefault(), x, s) }
+  / "(" _ o:operator &{ o.Id == "DEFOBJECT"   } _ c:constant _                                          d:string? _ ":->" _ x:indvar _ ":<=" _ s:sentence _ ")" { new ReversePartialObjectDefinition(c, d.SingleOrDefault(), x, s) }
+  / "(" _ o:operator &{ o.Id == "DEFFUNCTION" } _ c:constant _ "(" _ a:indvar<0,,_> _ v:seqvar? _ ")" _ d:string? _ ":->" _ x:indvar _ ":=>" _ s:sentence _ ")" { new PartialFunctionDefinition(c, d.SingleOrDefault(), a, v.SingleOrDefault(), x, s) }
+  / "(" _ o:operator &{ o.Id == "DEFFUNCTION" } _ c:constant _ "(" _ a:indvar<0,,_> _ v:seqvar? _ ")" _ d:string? _ ":->" _ x:indvar _ ":<=" _ s:sentence _ ")" { new ReversePartialFunctionDefinition(c, d.SingleOrDefault(), a, v.SingleOrDefault(), x, s) }
+  / "(" _ o:operator &{ o.Id == "DEFRELATION" } _ c:constant _ "(" _ a:indvar<0,,_> _ v:seqvar? _ ")" _ d:string? _                    ":=>" _ s:sentence _ ")" { new PartialRelationDefinition(c, d.SingleOrDefault(), a, v.SingleOrDefault(), s) }
+  / "(" _ o:operator &{ o.Id == "DEFRELATION" } _ c:constant _ "(" _ a:indvar<0,,_> _ v:seqvar? _ ")" _ d:string? _                    ":<=" _ s:sentence _ ")" { new ReversePartialRelationDefinition(c, d.SingleOrDefault(), a, v.SingleOrDefault(), s) }
+  / "(" _ o:operator &{ o.Id == "DEFLOGICAL"  } _ c:constant _                                          d:string? _                    ":=>" _ s:sentence _ ")" { new PartialLogicalDefinition(c, d.SingleOrDefault(), s) }
+  / "(" _ o:operator &{ o.Id == "DEFLOGICAL"  } _ c:constant _                                          d:string? _                    ":<=" _ s:sentence _ ")" { new ReversePartialLogicalDefinition(c, d.SingleOrDefault(), s) }
 
 form <Form> = sentence / definition
 

@@ -10,9 +10,10 @@ namespace KnowledgeInterchangeFormat.Expressions
         /// <summary>
         /// Initializes a new instance of the <see cref="SequenceVariable"/> class.
         /// </summary>
-        /// <param name="name">The name of the variable.</param>
-        public SequenceVariable(string name)
-            : base(name)
+        /// <param name="id">The id of the variable.</param>
+        /// <param name="name">The optional display name of the variable.</param>
+        public SequenceVariable(string id, string name = null)
+            : base(id, name)
         {
         }
     }
