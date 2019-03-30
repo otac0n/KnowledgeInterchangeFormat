@@ -8,6 +8,8 @@ KnowledgeInterchangeFormat
 [![Test Coverage](https://img.shields.io/codecov/c/github/otac0n/KnowledgeInterchangeFormat.svg?style=flat-square)](https://codecov.io/gh/otac0n/KnowledgeInterchangeFormat)
 [![Pre-release packages available](https://img.shields.io/nuget/vpre/KnowledgeInterchangeFormat.svg?style=flat-square)](http://nuget.org/packages/KnowledgeInterchangeFormat)
 
+An implementation of the KIF specification at http://www.ksl.stanford.edu/knowledge-sharing/kif/
+
 Getting Started
 ---------------
 
