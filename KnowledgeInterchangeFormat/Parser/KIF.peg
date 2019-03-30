@@ -30,7 +30,7 @@ special = ["#'(),\\^`]
 white = [ \t\r\n\f]
 normal = upper / lower / digit / alpha
 
-word <Tuple<string, string>> -memoize -lexical
+word <Tuple<string, string>> -memoize
   = &normal w:(<Tuple<string, string>>
     c:normal           { Tuple.Create(c.ToUpperInvariant(), c) }
     / "\\" c:character { Tuple.Create(c, c) }
@@ -39,13 +39,13 @@ word <Tuple<string, string>> -memoize -lexical
     string.Concat(w.Select(c => c.Item2)))
   }
 
-charref <CharacterReference> -lexical = "#\\" c:character { new CharacterReference(c[0]) }
+charref <CharacterReference> = "#\\" c:character { new CharacterReference(c[0]) }
 
-string <CharacterString> -lexical = '"' s:quotable '"' { new CharacterString(s) }
+string <CharacterString> = '"' s:quotable '"' { new CharacterString(s) }
 quotable -memoize = s:(strchar / "\\" c:character { c }) { string.Concat(s) }
 strchar = !["\\] character
 
-block <CharacterBlock> -lexical = "#" n:int "q"i v:#parse{{
+block <CharacterBlock> = "#" n:int "q"i v:#parse{{
     if (state.Location + n <= state.Subject.Length)
     {
         var result = state.Subject.Substring(state.Location, n);
@@ -144,7 +144,7 @@ knowledgeBase <KnowledgeBase> = _ f:form<0,,_> _ EOF { new KnowledgeBase(f) }
 
 _ -memoize = "" (white / EOL / comment)*
 
-comment -lexical
+comment
   = ";" (!eolChar .)* EOL?
 
 EOL
