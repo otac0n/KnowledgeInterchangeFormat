@@ -25,7 +25,7 @@ namespace KnowledgeInterchangeFormat.Expressions
         /// <summary>
         /// Gets the relation to apply.
         /// </summary>
-        public Constant Relation { get; }
+        public new Constant Relation { get; }
 
         /// <inheritdoc/>
         public override void ToString(StringBuilder sb)

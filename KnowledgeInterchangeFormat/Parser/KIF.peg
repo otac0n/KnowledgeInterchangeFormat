@@ -19,14 +19,12 @@
 }
 
 character = [\0-\x7F]
-empty =
 int <int> = d:("" digit+) { int.Parse(d) }
 
 upper = [A-Z]
 lower = [a-z]
 digit = [0-9]
 alpha = [-!$%&*+./:<=>?@_~]
-special = ["#'(),\\^`]
 white = [ \t\r\n\f]
 normal = upper / lower / digit / alpha
 
