@@ -6,7 +6,7 @@ install:
   - gitversion /l console /output buildserver
   - choco install GitReleaseNotes.Portable
   - choco install opencover.portable
-  - pip install codecov
+  - choco install codecov
 before_build:
   - nuget restore
   - GitReleaseNotes . /AllTags /C breaking /O ReleaseNotes.md
@@ -15,7 +15,7 @@ build:
 test_script:
   - OpenCover.Console.exe -target:dotnet.exe -targetargs:"test --configuration %CONFIGURATION% --no-build" -register:user -filter:"+[*]* -[*.Tests]* -[xunit*]*" -output:coverage.xml -oldStyle
 after_test:
-  - codecov -X gcov -f "coverage.xml"
+  - codecov -f "coverage.xml"
 artifacts:
   - path: 'ReleaseNotes.md'
   - path: '**\*.nupkg'
