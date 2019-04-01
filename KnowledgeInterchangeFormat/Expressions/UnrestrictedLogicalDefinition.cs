@@ -2,14 +2,17 @@
 
 namespace KnowledgeInterchangeFormat.Expressions
 {
+    using System;
     using System.Collections.Generic;
     using System.Text;
 
     /// <summary>
     /// An unrestricted logical definition.
     /// </summary>
-    public class UnrestrictedLogicalDefinition : UnrestrictedDefinition
+    public class UnrestrictedLogicalDefinition : UnrestrictedDefinition, IEquatable<UnrestrictedLogicalDefinition>
     {
+        private const int HashCodeSeed = unchecked((int)0xa5b419be);
+
         /// <summary>
         /// Initializes a new instance of the <see cref="UnrestrictedLogicalDefinition"/> class.
         /// </summary>
@@ -19,6 +22,26 @@ namespace KnowledgeInterchangeFormat.Expressions
         public UnrestrictedLogicalDefinition(Constant constant, CharacterString description, IEnumerable<Sentence> sentences)
             : base(constant, description, sentences)
         {
+        }
+
+        /// <inheritdoc/>
+        public override bool Equals(Expression other) => other is UnrestrictedLogicalDefinition unrestrictedLogicalDefinition && this.Equals(unrestrictedLogicalDefinition);
+
+        /// <inheritdoc/>
+        public bool Equals(UnrestrictedLogicalDefinition other) => !(other is null) &&
+            this.Sentences.Count == other.Sentences.Count &&
+            this.Constant == other.Constant &&
+            this.Description == other.Description &&
+            EquatableUtilities.ListsEqual(this.Sentences, other.Sentences);
+
+        /// <inheritdoc/>
+        public override int GetHashCode()
+        {
+            var hash = HashCodeSeed;
+            EquatableUtilities.Combine(ref hash, this.Constant);
+            EquatableUtilities.Combine(ref hash, this.Description);
+            EquatableUtilities.Combine(ref hash, EquatableUtilities.HashList(this.Sentences));
+            return hash;
         }
 
         /// <inheritdoc/>

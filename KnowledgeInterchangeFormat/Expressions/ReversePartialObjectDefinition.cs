@@ -8,8 +8,10 @@ namespace KnowledgeInterchangeFormat.Expressions
     /// <summary>
     /// A partial object definition.
     /// </summary>
-    public class ReversePartialObjectDefinition : PartialDefinition
+    public class ReversePartialObjectDefinition : PartialDefinition, IEquatable<ReversePartialObjectDefinition>
     {
+        private const int HashCodeSeed = unchecked((int)0x8fe9804b);
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ReversePartialObjectDefinition"/> class.
         /// </summary>
@@ -33,6 +35,27 @@ namespace KnowledgeInterchangeFormat.Expressions
         /// Gets the individual variable.
         /// </summary>
         public IndividualVariable Variable { get; }
+
+        /// <inheritdoc/>
+        public override bool Equals(Expression other) => other is ReversePartialObjectDefinition reversePartialObjectDefinition && this.Equals(reversePartialObjectDefinition);
+
+        /// <inheritdoc/>
+        public bool Equals(ReversePartialObjectDefinition other) => !(other is null) &&
+            this.Constant == other.Constant &&
+            this.Description == other.Description &&
+            this.Variable == other.Variable &&
+            this.Sentence == other.Sentence;
+
+        /// <inheritdoc/>
+        public override int GetHashCode()
+        {
+            var hash = HashCodeSeed;
+            EquatableUtilities.Combine(ref hash, this.Constant);
+            EquatableUtilities.Combine(ref hash, this.Description);
+            EquatableUtilities.Combine(ref hash, this.Variable);
+            EquatableUtilities.Combine(ref hash, this.Sentence);
+            return hash;
+        }
 
         /// <inheritdoc/>
         public override void ToString(StringBuilder sb)

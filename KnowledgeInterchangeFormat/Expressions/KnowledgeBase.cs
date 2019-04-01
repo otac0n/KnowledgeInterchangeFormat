@@ -2,6 +2,7 @@
 
 namespace KnowledgeInterchangeFormat.Expressions
 {
+    using System;
     using System.Collections.Generic;
     using System.Collections.Immutable;
     using System.Text;
@@ -9,8 +10,10 @@ namespace KnowledgeInterchangeFormat.Expressions
     /// <summary>
     /// A finite set of <see cref="Form">forms</see>.
     /// </summary>
-    public class KnowledgeBase : Expression
+    public class KnowledgeBase : Expression, IEquatable<KnowledgeBase>
     {
+        private const int HashCodeSeed = 0x5eea08d0;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="KnowledgeBase"/> class.
         /// </summary>
@@ -24,6 +27,22 @@ namespace KnowledgeInterchangeFormat.Expressions
         /// Gets the <see cref="Form">forms</see> in the knowledge base.
         /// </summary>
         public ImmutableList<Form> Forms { get; }
+
+        /// <inheritdoc/>
+        public override bool Equals(Expression other) => other is KnowledgeBase knowledgeBase && this.Equals(knowledgeBase);
+
+        /// <inheritdoc/>
+        public bool Equals(KnowledgeBase other) => !(other is null) &&
+            this.Forms.Count == other.Forms.Count &&
+            EquatableUtilities.ListsEqual(this.Forms, other.Forms);
+
+        /// <inheritdoc/>
+        public override int GetHashCode()
+        {
+            var hash = HashCodeSeed;
+            EquatableUtilities.Combine(ref hash, EquatableUtilities.HashList(this.Forms));
+            return hash;
+        }
 
         /// <inheritdoc/>
         public override void ToString(StringBuilder sb)

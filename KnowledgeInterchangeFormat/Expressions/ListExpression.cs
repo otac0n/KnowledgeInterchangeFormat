@@ -10,8 +10,10 @@ namespace KnowledgeInterchangeFormat.Expressions
     /// <summary>
     /// An <see cref="Expression"/> that contains a list of other expressions.
     /// </summary>
-    public class ListExpression : Expression
+    public class ListExpression : Expression, IEquatable<ListExpression>
     {
+        private const int HashCodeSeed = 0x1309c9b1;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ListExpression"/> class.
         /// </summary>
@@ -25,6 +27,22 @@ namespace KnowledgeInterchangeFormat.Expressions
         /// Gets the items contained in the list.
         /// </summary>
         public ImmutableList<Expression> Items { get; }
+
+        /// <inheritdoc/>
+        public override bool Equals(Expression other) => other is ListExpression listExpression && this.Equals(listExpression);
+
+        /// <inheritdoc/>
+        public bool Equals(ListExpression other) => !(other is null) &&
+            this.Items.Count == other.Items.Count &&
+            EquatableUtilities.ListsEqual(this.Items, other.Items);
+
+        /// <inheritdoc/>
+        public override int GetHashCode()
+        {
+            var hash = HashCodeSeed;
+            EquatableUtilities.Combine(ref hash, EquatableUtilities.HashList(this.Items));
+            return hash;
+        }
 
         /// <inheritdoc/>
         public override void ToString(StringBuilder sb)

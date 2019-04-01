@@ -2,14 +2,17 @@
 
 namespace KnowledgeInterchangeFormat.Expressions
 {
+    using System;
     using System.Collections.Generic;
     using System.Text;
 
     /// <summary>
     /// An unrestricted object definition.
     /// </summary>
-    public class UnrestrictedObjectDefinition : UnrestrictedDefinition
+    public class UnrestrictedObjectDefinition : UnrestrictedDefinition, IEquatable<UnrestrictedObjectDefinition>
     {
+        private const int HashCodeSeed = 0x610137f7;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="UnrestrictedObjectDefinition"/> class.
         /// </summary>
@@ -19,6 +22,26 @@ namespace KnowledgeInterchangeFormat.Expressions
         public UnrestrictedObjectDefinition(Constant constant, CharacterString description, IEnumerable<Sentence> sentences)
             : base(constant, description, sentences)
         {
+        }
+
+        /// <inheritdoc/>
+        public override bool Equals(Expression other) => other is UnrestrictedObjectDefinition unrestrictedObjectDefinition && this.Equals(unrestrictedObjectDefinition);
+
+        /// <inheritdoc/>
+        public bool Equals(UnrestrictedObjectDefinition other) => !(other is null) &&
+            this.Sentences.Count == other.Sentences.Count &&
+            this.Constant == other.Constant &&
+            this.Description == other.Description &&
+            EquatableUtilities.ListsEqual(this.Sentences, other.Sentences);
+
+        /// <inheritdoc/>
+        public override int GetHashCode()
+        {
+            var hash = HashCodeSeed;
+            EquatableUtilities.Combine(ref hash, this.Constant);
+            EquatableUtilities.Combine(ref hash, this.Description);
+            EquatableUtilities.Combine(ref hash, EquatableUtilities.HashList(this.Sentences));
+            return hash;
         }
 
         /// <inheritdoc/>

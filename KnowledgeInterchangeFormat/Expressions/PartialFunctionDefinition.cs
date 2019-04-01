@@ -10,8 +10,10 @@ namespace KnowledgeInterchangeFormat.Expressions
     /// <summary>
     /// A partial function definition.
     /// </summary>
-    public class PartialFunctionDefinition : PartialDefinition
+    public class PartialFunctionDefinition : PartialDefinition, IEquatable<PartialFunctionDefinition>
     {
+        private const int HashCodeSeed = unchecked((int)0xcaf7ee6b);
+
         /// <summary>
         /// Initializes a new instance of the <see cref="PartialFunctionDefinition"/> class.
         /// </summary>
@@ -49,6 +51,32 @@ namespace KnowledgeInterchangeFormat.Expressions
         /// Gets the individual variable.
         /// </summary>
         public IndividualVariable Variable { get; }
+
+        /// <inheritdoc/>
+        public override bool Equals(Expression other) => other is PartialFunctionDefinition partialFunctionDefinition && this.Equals(partialFunctionDefinition);
+
+        /// <inheritdoc/>
+        public bool Equals(PartialFunctionDefinition other) => !(other is null) &&
+            this.Parameters.Count == other.Parameters.Count &&
+            this.Constant == other.Constant &&
+            this.Description == other.Description &&
+            this.SequenceVariable == other.SequenceVariable &&
+            this.Variable == other.Variable &&
+            this.Sentence == other.Sentence &&
+            EquatableUtilities.ListsEqual(this.Parameters, other.Parameters);
+
+        /// <inheritdoc/>
+        public override int GetHashCode()
+        {
+            var hash = HashCodeSeed;
+            EquatableUtilities.Combine(ref hash, this.Constant);
+            EquatableUtilities.Combine(ref hash, this.Description);
+            EquatableUtilities.Combine(ref hash, EquatableUtilities.HashList(this.Parameters));
+            EquatableUtilities.Combine(ref hash, this.SequenceVariable);
+            EquatableUtilities.Combine(ref hash, this.Variable);
+            EquatableUtilities.Combine(ref hash, this.Sentence);
+            return hash;
+        }
 
         /// <inheritdoc/>
         public override void ToString(StringBuilder sb)

@@ -10,8 +10,10 @@ namespace KnowledgeInterchangeFormat.Expressions
     /// <summary>
     /// A complete relation definition.
     /// </summary>
-    public class CompleteRelationDefinition : CompleteDefinition
+    public class CompleteRelationDefinition : CompleteDefinition, IEquatable<CompleteRelationDefinition>
     {
+        private const int HashCodeSeed = 0x6485b5cc;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="CompleteRelationDefinition"/> class.
         /// </summary>
@@ -42,6 +44,30 @@ namespace KnowledgeInterchangeFormat.Expressions
         /// Gets the defining sentence.
         /// </summary>
         public Sentence Sentence { get; }
+
+        /// <inheritdoc/>
+        public override bool Equals(Expression other) => other is CompleteRelationDefinition completeRelationDefinition && this.Equals(completeRelationDefinition);
+
+        /// <inheritdoc/>
+        public bool Equals(CompleteRelationDefinition other) => !(other is null) &&
+            this.Parameters.Count == other.Parameters.Count &&
+            this.Constant == other.Constant &&
+            this.Description == other.Description &&
+            this.SequenceVariable == other.SequenceVariable &&
+            this.Sentence == other.Sentence &&
+            EquatableUtilities.ListsEqual(this.Parameters, other.Parameters);
+
+        /// <inheritdoc/>
+        public override int GetHashCode()
+        {
+            var hash = HashCodeSeed;
+            EquatableUtilities.Combine(ref hash, this.Constant);
+            EquatableUtilities.Combine(ref hash, this.Description);
+            EquatableUtilities.Combine(ref hash, EquatableUtilities.HashList(this.Parameters));
+            EquatableUtilities.Combine(ref hash, this.SequenceVariable);
+            EquatableUtilities.Combine(ref hash, this.Sentence);
+            return hash;
+        }
 
         /// <inheritdoc/>
         public override void ToString(StringBuilder sb)

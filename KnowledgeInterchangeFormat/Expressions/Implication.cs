@@ -10,8 +10,10 @@ namespace KnowledgeInterchangeFormat.Expressions
     /// <summary>
     /// A <see cref="Sentence"/> involving the <c>=&gt;</c> operator.
     /// </summary>
-    public class Implication : LogicalSentence
+    public class Implication : LogicalSentence, IEquatable<Implication>
     {
+        private const int HashCodeSeed = 0x1cb4b938;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Implication"/> class.
         /// </summary>
@@ -32,6 +34,25 @@ namespace KnowledgeInterchangeFormat.Expressions
         /// Gets the consequent of the implication.
         /// </summary>
         public Sentence Consequent { get; }
+
+        /// <inheritdoc/>
+        public override bool Equals(Expression other) => other is Implication implication && this.Equals(implication);
+
+        /// <inheritdoc/>
+        public virtual bool Equals(Implication other) => !(other is null) &&
+            !(other is ReverseImplication) &&
+            this.Antecedents.Count == other.Antecedents.Count &&
+            this.Consequent == other.Consequent &&
+            EquatableUtilities.ListsEqual(this.Antecedents, other.Antecedents);
+
+        /// <inheritdoc/>
+        public override int GetHashCode()
+        {
+            var hash = HashCodeSeed;
+            EquatableUtilities.Combine(ref hash, this.Consequent);
+            EquatableUtilities.Combine(ref hash, EquatableUtilities.HashList(this.Antecedents));
+            return hash;
+        }
 
         /// <inheritdoc />
         public override void ToString(StringBuilder sb)

@@ -8,8 +8,10 @@ namespace KnowledgeInterchangeFormat.Expressions
     /// <summary>
     /// A partial logical definition.
     /// </summary>
-    public class ReversePartialLogicalDefinition : PartialDefinition
+    public class ReversePartialLogicalDefinition : PartialDefinition, IEquatable<ReversePartialLogicalDefinition>
     {
+        private const int HashCodeSeed = 0x3e1bec57;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ReversePartialLogicalDefinition"/> class.
         /// </summary>
@@ -26,6 +28,25 @@ namespace KnowledgeInterchangeFormat.Expressions
         /// Gets the defining sentence.
         /// </summary>
         public Sentence Sentence { get; }
+
+        /// <inheritdoc/>
+        public override bool Equals(Expression other) => other is ReversePartialLogicalDefinition reversePartialLogicalDefinition && this.Equals(reversePartialLogicalDefinition);
+
+        /// <inheritdoc/>
+        public bool Equals(ReversePartialLogicalDefinition other) => !(other is null) &&
+            this.Constant == other.Constant &&
+            this.Description == other.Description &&
+            this.Sentence == other.Sentence;
+
+        /// <inheritdoc/>
+        public override int GetHashCode()
+        {
+            var hash = HashCodeSeed;
+            EquatableUtilities.Combine(ref hash, this.Constant);
+            EquatableUtilities.Combine(ref hash, this.Description);
+            EquatableUtilities.Combine(ref hash, this.Sentence);
+            return hash;
+        }
 
         /// <inheritdoc/>
         public override void ToString(StringBuilder sb)

@@ -2,14 +2,17 @@
 
 namespace KnowledgeInterchangeFormat.Expressions
 {
+    using System;
     using System.Collections.Generic;
     using System.Text;
 
     /// <summary>
     /// A function invoked directly by name.
     /// </summary>
-    public class ImplicitFunctionalTerm : FunctionalTerm
+    public class ImplicitFunctionalTerm : FunctionalTerm, IEquatable<ImplicitFunctionalTerm>
     {
+        private const int HashCodeSeed = 0x5f0ac5b7;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ImplicitFunctionalTerm"/> class.
         /// </summary>
@@ -26,6 +29,26 @@ namespace KnowledgeInterchangeFormat.Expressions
         /// Gets the function to invoke.
         /// </summary>
         public new Constant Function { get; }
+
+        /// <inheritdoc/>
+        public override bool Equals(Expression other) => other is ImplicitFunctionalTerm implicitFunctionalTerm && this.Equals(implicitFunctionalTerm);
+
+        /// <inheritdoc/>
+        public bool Equals(ImplicitFunctionalTerm other) => !(other is null) &&
+            this.Arguments.Count == other.Arguments.Count &&
+            this.Function == other.Function &&
+            this.SequenceVariable == other.SequenceVariable &&
+            EquatableUtilities.ListsEqual(this.Arguments, other.Arguments);
+
+        /// <inheritdoc/>
+        public override int GetHashCode()
+        {
+            var hash = HashCodeSeed;
+            EquatableUtilities.Combine(ref hash, this.Function);
+            EquatableUtilities.Combine(ref hash, EquatableUtilities.HashList(this.Arguments));
+            EquatableUtilities.Combine(ref hash, this.SequenceVariable);
+            return hash;
+        }
 
         /// <inheritdoc/>
         public override void ToString(StringBuilder sb)

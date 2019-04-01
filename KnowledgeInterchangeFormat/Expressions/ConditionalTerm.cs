@@ -10,8 +10,10 @@ namespace KnowledgeInterchangeFormat.Expressions
     /// <summary>
     /// A conditional term using the <c>cond</c> operator.
     /// </summary>
-    public class ConditionalTerm : LogicalTerm
+    public class ConditionalTerm : LogicalTerm, IEquatable<ConditionalTerm>
     {
+        private const int HashCodeSeed = 0x30c7c4d9;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ConditionalTerm"/> class.
         /// </summary>
@@ -25,6 +27,22 @@ namespace KnowledgeInterchangeFormat.Expressions
         /// Gets the logical pairs used in this conditional term.
         /// </summary>
         public ImmutableList<LogicalPair> Pairs { get; }
+
+        /// <inheritdoc/>
+        public override bool Equals(Expression other) => other is ConditionalTerm conditionalTerm && this.Equals(conditionalTerm);
+
+        /// <inheritdoc/>
+        public bool Equals(ConditionalTerm other) => !(other is null) &&
+            this.Pairs.Count == other.Pairs.Count &&
+            EquatableUtilities.ListsEqual(this.Pairs, other.Pairs);
+
+        /// <inheritdoc/>
+        public override int GetHashCode()
+        {
+            var hash = HashCodeSeed;
+            EquatableUtilities.Combine(ref hash, EquatableUtilities.HashList(this.Pairs));
+            return hash;
+        }
 
         /// <inheritdoc/>
         public override void ToString(StringBuilder sb)

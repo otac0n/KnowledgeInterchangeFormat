@@ -8,7 +8,7 @@ namespace KnowledgeInterchangeFormat.Expressions
     /// <summary>
     /// A <see cref="Constant"/>, <see cref="Operator"/>, or <see cref="Variable"/>.
     /// </summary>
-    public abstract class WordTerm : Term
+    public abstract class WordTerm : Term, IEquatable<WordTerm>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="WordTerm"/> class.
@@ -43,6 +43,15 @@ namespace KnowledgeInterchangeFormat.Expressions
         /// Gets the display name of the variable.
         /// </summary>
         public string Name { get; }
+
+        /// <inheritdoc />
+        public override bool Equals(Expression other) => other is WordTerm wordTerm && this.Equals(wordTerm);
+
+        /// <inheritdoc />
+        public bool Equals(WordTerm other) => !(other is null) && this.Id == other.Id;
+
+        /// <inheritdoc />
+        public override int GetHashCode() => this.Id.GetHashCode();
 
         /// <inheritdoc />
         public override void ToString(StringBuilder sb)

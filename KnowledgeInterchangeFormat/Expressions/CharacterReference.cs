@@ -2,12 +2,13 @@
 
 namespace KnowledgeInterchangeFormat.Expressions
 {
+    using System;
     using System.Text;
 
     /// <summary>
     /// A reference to a single character.
     /// </summary>
-    public class CharacterReference : Term
+    public class CharacterReference : Term, IEquatable<CharacterReference>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="CharacterReference"/> class.
@@ -22,6 +23,15 @@ namespace KnowledgeInterchangeFormat.Expressions
         /// Gets the literal character.
         /// </summary>
         public char Character { get; }
+
+        /// <inheritdoc/>
+        public override bool Equals(Expression other) => other is CharacterReference characterReference && this.Equals(characterReference);
+
+        /// <inheritdoc/>
+        public bool Equals(CharacterReference other) => !(other is null) && this.Character == other.Character;
+
+        /// <inheritdoc/>
+        public override int GetHashCode() => this.Character;
 
         /// <inheritdoc/>
         public override void ToString(StringBuilder sb)

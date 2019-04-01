@@ -10,8 +10,10 @@ namespace KnowledgeInterchangeFormat.Expressions
     /// <summary>
     /// A block of characters.
     /// </summary>
-    public class CharacterBlock : ListTerm
+    public class CharacterBlock : ListTerm, IEquatable<CharacterBlock>
     {
+        private const int HashCodeSeed = 0x6deb67fe;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="CharacterBlock"/> class.
         /// </summary>
@@ -26,6 +28,15 @@ namespace KnowledgeInterchangeFormat.Expressions
         /// Gets the block of characters.
         /// </summary>
         public string Characters { get; }
+
+        /// <inheritdoc/>
+        public override bool Equals(Expression other) => other is CharacterBlock characterBlock && this.Equals(characterBlock);
+
+        /// <inheritdoc/>
+        public bool Equals(CharacterBlock other) => !(other is null) && this.Characters == other.Characters;
+
+        /// <inheritdoc/>
+        public override int GetHashCode() => this.Characters.GetHashCode() ^ HashCodeSeed;
 
         /// <inheritdoc/>
         public override void ToString(StringBuilder sb)

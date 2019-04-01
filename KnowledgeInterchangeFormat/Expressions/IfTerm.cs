@@ -10,8 +10,10 @@ namespace KnowledgeInterchangeFormat.Expressions
     /// <summary>
     /// A conditional term using the <c>if</c> operator.
     /// </summary>
-    public class IfTerm : LogicalTerm
+    public class IfTerm : LogicalTerm, IEquatable<IfTerm>
     {
+        private const int HashCodeSeed = unchecked((int)0xe07bb89f);
+
         /// <summary>
         /// Initializes a new instance of the <see cref="IfTerm"/> class.
         /// </summary>
@@ -32,6 +34,24 @@ namespace KnowledgeInterchangeFormat.Expressions
         /// Gets the logical pairs used in this conditional term.
         /// </summary>
         public ImmutableList<LogicalPair> Pairs { get; }
+
+        /// <inheritdoc/>
+        public override bool Equals(Expression other) => other is IfTerm ifTerm && this.Equals(ifTerm);
+
+        /// <inheritdoc/>
+        public bool Equals(IfTerm other) => !(other is null) &&
+            this.Pairs.Count == other.Pairs.Count &&
+            this.Default == other.Default &&
+            EquatableUtilities.ListsEqual(this.Pairs, other.Pairs);
+
+        /// <inheritdoc/>
+        public override int GetHashCode()
+        {
+            var hash = HashCodeSeed;
+            EquatableUtilities.Combine(ref hash, this.Default);
+            EquatableUtilities.Combine(ref hash, EquatableUtilities.HashList(this.Pairs));
+            return hash;
+        }
 
         /// <inheritdoc/>
         public override void ToString(StringBuilder sb)

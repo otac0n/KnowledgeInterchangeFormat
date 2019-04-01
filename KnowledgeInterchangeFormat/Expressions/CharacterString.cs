@@ -9,8 +9,10 @@ namespace KnowledgeInterchangeFormat.Expressions
     /// <summary>
     /// A string of characters.
     /// </summary>
-    public class CharacterString : ListTerm
+    public class CharacterString : ListTerm, IEquatable<CharacterString>
     {
+        private const int HashCodeSeed = 0x7a0c747c;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="CharacterString"/> class.
         /// </summary>
@@ -25,6 +27,15 @@ namespace KnowledgeInterchangeFormat.Expressions
         /// Gets the string of characters.
         /// </summary>
         public string Characters { get; }
+
+        /// <inheritdoc/>
+        public override bool Equals(Expression other) => other is CharacterString characterString && this.Equals(characterString);
+
+        /// <inheritdoc/>
+        public bool Equals(CharacterString other) => !(other is null) && this.Characters == other.Characters;
+
+        /// <inheritdoc/>
+        public override int GetHashCode() => this.Characters.GetHashCode() ^ HashCodeSeed;
 
         /// <inheritdoc />
         public override void ToString(StringBuilder sb)

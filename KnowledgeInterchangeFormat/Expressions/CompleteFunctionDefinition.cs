@@ -10,8 +10,10 @@ namespace KnowledgeInterchangeFormat.Expressions
     /// <summary>
     /// A complete function definition.
     /// </summary>
-    public class CompleteFunctionDefinition : CompleteDefinition
+    public class CompleteFunctionDefinition : CompleteDefinition, IEquatable<CompleteFunctionDefinition>
     {
+        private const int HashCodeSeed = unchecked((int)0xb6c7a883);
+
         /// <summary>
         /// Initializes a new instance of the <see cref="CompleteFunctionDefinition"/> class.
         /// </summary>
@@ -42,6 +44,30 @@ namespace KnowledgeInterchangeFormat.Expressions
         /// Gets the defining term.
         /// </summary>
         public Term Term { get; }
+
+        /// <inheritdoc/>
+        public override bool Equals(Expression other) => other is CompleteFunctionDefinition completeFunctionDefinition && this.Equals(completeFunctionDefinition);
+
+        /// <inheritdoc/>
+        public bool Equals(CompleteFunctionDefinition other) => !(other is null) &&
+            this.Parameters.Count == other.Parameters.Count &&
+            this.Constant == other.Constant &&
+            this.Description == other.Description &&
+            this.Term == other.Term &&
+            this.SequenceVariable == other.SequenceVariable &&
+            EquatableUtilities.ListsEqual(this.Parameters, other.Parameters);
+
+        /// <inheritdoc/>
+        public override int GetHashCode()
+        {
+            var hash = HashCodeSeed;
+            EquatableUtilities.Combine(ref hash, this.Constant);
+            EquatableUtilities.Combine(ref hash, this.Description);
+            EquatableUtilities.Combine(ref hash, EquatableUtilities.HashList(this.Parameters));
+            EquatableUtilities.Combine(ref hash, this.SequenceVariable);
+            EquatableUtilities.Combine(ref hash, this.Term);
+            return hash;
+        }
 
         /// <inheritdoc/>
         public override void ToString(StringBuilder sb)

@@ -8,8 +8,10 @@ namespace KnowledgeInterchangeFormat.Expressions
     /// <summary>
     /// A <see cref="Sentence"/> involving the <c>&lt;=&gt;</c> operator.
     /// </summary>
-    public class Equivalence : LogicalSentence
+    public class Equivalence : LogicalSentence, IEquatable<Equivalence>
     {
+        private const int HashCodeSeed = unchecked((int)0x93e5a1c3);
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Equivalence"/> class.
         /// </summary>
@@ -30,6 +32,23 @@ namespace KnowledgeInterchangeFormat.Expressions
         /// Gets the right side of the equivalence.
         /// </summary>
         public Sentence Right { get; }
+
+        /// <inheritdoc/>
+        public override bool Equals(Expression other) => other is Equivalence equivalence && this.Equals(equivalence);
+
+        /// <inheritdoc/>
+        public bool Equals(Equivalence other) => !(other is null) &&
+            this.Left == other.Left &&
+            this.Right == other.Right;
+
+        /// <inheritdoc/>
+        public override int GetHashCode()
+        {
+            var hash = HashCodeSeed;
+            EquatableUtilities.Combine(ref hash, this.Left);
+            EquatableUtilities.Combine(ref hash, this.Right);
+            return hash;
+        }
 
         /// <inheritdoc />
         public override void ToString(StringBuilder sb)

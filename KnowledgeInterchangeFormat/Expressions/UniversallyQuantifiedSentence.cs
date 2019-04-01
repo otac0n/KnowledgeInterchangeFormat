@@ -2,14 +2,17 @@
 
 namespace KnowledgeInterchangeFormat.Expressions
 {
+    using System;
     using System.Collections.Generic;
     using System.Text;
 
     /// <summary>
     /// A <see cref="QuantifiedSentence"/> using the <c>forall</c> operator.
     /// </summary>
-    public class UniversallyQuantifiedSentence : QuantifiedSentence
+    public class UniversallyQuantifiedSentence : QuantifiedSentence, IEquatable<UniversallyQuantifiedSentence>
     {
+        private const int HashCodeSeed = unchecked((int)0xee2cba1b);
+
         /// <summary>
         /// Initializes a new instance of the <see cref="UniversallyQuantifiedSentence"/> class.
         /// </summary>
@@ -18,6 +21,24 @@ namespace KnowledgeInterchangeFormat.Expressions
         public UniversallyQuantifiedSentence(IEnumerable<VariableSpecification> variables, Sentence quantified)
             : base(variables, quantified)
         {
+        }
+
+        /// <inheritdoc/>
+        public override bool Equals(Expression other) => other is UniversallyQuantifiedSentence universallyQuantifiedSentence && this.Equals(universallyQuantifiedSentence);
+
+        /// <inheritdoc/>
+        public bool Equals(UniversallyQuantifiedSentence other) => !(other is null) &&
+            this.Variables.Count == other.Variables.Count &&
+            this.Quantified == other.Quantified &&
+            EquatableUtilities.ListsEqual(this.Variables, other.Variables);
+
+        /// <inheritdoc/>
+        public override int GetHashCode()
+        {
+            var hash = HashCodeSeed;
+            EquatableUtilities.Combine(ref hash, EquatableUtilities.HashList(this.Variables));
+            EquatableUtilities.Combine(ref hash, this.Quantified);
+            return hash;
         }
 
         /// <inheritdoc/>

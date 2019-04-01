@@ -8,8 +8,10 @@ namespace KnowledgeInterchangeFormat.Expressions
     /// <summary>
     /// A complete object definition.
     /// </summary>
-    public class CompleteObjectDefinition : CompleteDefinition
+    public class CompleteObjectDefinition : CompleteDefinition, IEquatable<CompleteObjectDefinition>
     {
+        private const int HashCodeSeed = 0x3332591d;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="CompleteObjectDefinition"/> class.
         /// </summary>
@@ -26,6 +28,25 @@ namespace KnowledgeInterchangeFormat.Expressions
         /// Gets the defining term.
         /// </summary>
         public Term Term { get; }
+
+        /// <inheritdoc/>
+        public override bool Equals(Expression other) => other is CompleteObjectDefinition completeObjectDefinition && this.Equals(completeObjectDefinition);
+
+        /// <inheritdoc/>
+        public bool Equals(CompleteObjectDefinition other) => !(other is null) &&
+            this.Constant == other.Constant &&
+            this.Description == other.Description &&
+            this.Term == other.Term;
+
+        /// <inheritdoc/>
+        public override int GetHashCode()
+        {
+            var hash = HashCodeSeed;
+            EquatableUtilities.Combine(ref hash, this.Constant);
+            EquatableUtilities.Combine(ref hash, this.Description);
+            EquatableUtilities.Combine(ref hash, this.Term);
+            return hash;
+        }
 
         /// <inheritdoc/>
         public override void ToString(StringBuilder sb)

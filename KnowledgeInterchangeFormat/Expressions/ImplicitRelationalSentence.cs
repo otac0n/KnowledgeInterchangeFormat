@@ -2,14 +2,17 @@
 
 namespace KnowledgeInterchangeFormat.Expressions
 {
+    using System;
     using System.Collections.Generic;
     using System.Text;
 
     /// <summary>
     /// A relation applied directly by name.
     /// </summary>
-    public class ImplicitRelationalSentence : RelationalSentence
+    public class ImplicitRelationalSentence : RelationalSentence, IEquatable<ImplicitRelationalSentence>
     {
+        private const int HashCodeSeed = unchecked((int)0xace0988a);
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ImplicitRelationalSentence"/> class.
         /// </summary>
@@ -26,6 +29,26 @@ namespace KnowledgeInterchangeFormat.Expressions
         /// Gets the relation to apply.
         /// </summary>
         public new Constant Relation { get; }
+
+        /// <inheritdoc/>
+        public override bool Equals(Expression other) => other is ImplicitRelationalSentence implicitRelationalSentence && this.Equals(implicitRelationalSentence);
+
+        /// <inheritdoc/>
+        public bool Equals(ImplicitRelationalSentence other) => !(other is null) &&
+            this.Arguments.Count == other.Arguments.Count &&
+            this.Relation == other.Relation &&
+            this.SequenceVariable == other.SequenceVariable &&
+            EquatableUtilities.ListsEqual(this.Arguments, other.Arguments);
+
+        /// <inheritdoc/>
+        public override int GetHashCode()
+        {
+            var hash = HashCodeSeed;
+            EquatableUtilities.Combine(ref hash, this.Relation);
+            EquatableUtilities.Combine(ref hash, EquatableUtilities.HashList(this.Arguments));
+            EquatableUtilities.Combine(ref hash, this.SequenceVariable);
+            return hash;
+        }
 
         /// <inheritdoc/>
         public override void ToString(StringBuilder sb)

@@ -10,8 +10,10 @@ namespace KnowledgeInterchangeFormat.Expressions
     /// <summary>
     /// A partial function definition.
     /// </summary>
-    public class ReversePartialFunctionDefinition : PartialDefinition
+    public class ReversePartialFunctionDefinition : PartialDefinition, IEquatable<ReversePartialFunctionDefinition>
     {
+        private const int HashCodeSeed = unchecked((int)0xdc839c5d);
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ReversePartialFunctionDefinition"/> class.
         /// </summary>
@@ -49,6 +51,32 @@ namespace KnowledgeInterchangeFormat.Expressions
         /// Gets the individual variable.
         /// </summary>
         public IndividualVariable Variable { get; }
+
+        /// <inheritdoc/>
+        public override bool Equals(Expression other) => other is ReversePartialFunctionDefinition reversePartialFunctionDefinition && this.Equals(reversePartialFunctionDefinition);
+
+        /// <inheritdoc/>
+        public bool Equals(ReversePartialFunctionDefinition other) => !(other is null) &&
+            this.Parameters.Count == other.Parameters.Count &&
+            this.Constant == other.Constant &&
+            this.Description == other.Description &&
+            this.SequenceVariable == other.SequenceVariable &&
+            this.Variable == other.Variable &&
+            this.Sentence == other.Sentence &&
+            EquatableUtilities.ListsEqual(this.Parameters, other.Parameters);
+
+        /// <inheritdoc/>
+        public override int GetHashCode()
+        {
+            var hash = HashCodeSeed;
+            EquatableUtilities.Combine(ref hash, this.Constant);
+            EquatableUtilities.Combine(ref hash, this.Description);
+            EquatableUtilities.Combine(ref hash, EquatableUtilities.HashList(this.Parameters));
+            EquatableUtilities.Combine(ref hash, this.SequenceVariable);
+            EquatableUtilities.Combine(ref hash, this.Variable);
+            EquatableUtilities.Combine(ref hash, this.Sentence);
+            return hash;
+        }
 
         /// <inheritdoc/>
         public override void ToString(StringBuilder sb)

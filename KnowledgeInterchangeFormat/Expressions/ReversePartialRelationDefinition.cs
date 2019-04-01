@@ -10,8 +10,10 @@ namespace KnowledgeInterchangeFormat.Expressions
     /// <summary>
     /// A partial relation definition.
     /// </summary>
-    public class ReversePartialRelationDefinition : PartialDefinition
+    public class ReversePartialRelationDefinition : PartialDefinition, IEquatable<ReversePartialRelationDefinition>
     {
+        private const int HashCodeSeed = unchecked((int)0xa98c15b5);
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ReversePartialRelationDefinition"/> class.
         /// </summary>
@@ -42,6 +44,30 @@ namespace KnowledgeInterchangeFormat.Expressions
         /// Gets the defining sentence.
         /// </summary>
         public Sentence Sentence { get; }
+
+        /// <inheritdoc/>
+        public override bool Equals(Expression other) => other is ReversePartialRelationDefinition reversePartialRelationDefinition && this.Equals(reversePartialRelationDefinition);
+
+        /// <inheritdoc/>
+        public bool Equals(ReversePartialRelationDefinition other) => !(other is null) &&
+            this.Parameters.Count == other.Parameters.Count &&
+            this.Constant == other.Constant &&
+            this.Description == other.Description &&
+            this.SequenceVariable == other.SequenceVariable &&
+            this.Sentence == other.Sentence &&
+            EquatableUtilities.ListsEqual(this.Parameters, other.Parameters);
+
+        /// <inheritdoc/>
+        public override int GetHashCode()
+        {
+            var hash = HashCodeSeed;
+            EquatableUtilities.Combine(ref hash, this.Constant);
+            EquatableUtilities.Combine(ref hash, this.Description);
+            EquatableUtilities.Combine(ref hash, EquatableUtilities.HashList(this.Parameters));
+            EquatableUtilities.Combine(ref hash, this.SequenceVariable);
+            EquatableUtilities.Combine(ref hash, this.Sentence);
+            return hash;
+        }
 
         /// <inheritdoc/>
         public override void ToString(StringBuilder sb)

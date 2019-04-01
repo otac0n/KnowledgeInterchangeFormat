@@ -8,8 +8,10 @@ namespace KnowledgeInterchangeFormat.Expressions
     /// <summary>
     /// A complete logical definition.
     /// </summary>
-    public class CompleteLogicalDefinition : CompleteDefinition
+    public class CompleteLogicalDefinition : CompleteDefinition, IEquatable<CompleteLogicalDefinition>
     {
+        private const int HashCodeSeed = unchecked((int)0xa7f2dd6a);
+
         /// <summary>
         /// Initializes a new instance of the <see cref="CompleteLogicalDefinition"/> class.
         /// </summary>
@@ -26,6 +28,25 @@ namespace KnowledgeInterchangeFormat.Expressions
         /// Gets the defining sentence.
         /// </summary>
         public Sentence Sentence { get; }
+
+        /// <inheritdoc/>
+        public override bool Equals(Expression other) => other is CompleteLogicalDefinition completeLogicalDefinition && this.Equals(completeLogicalDefinition);
+
+        /// <inheritdoc/>
+        public bool Equals(CompleteLogicalDefinition other) => !(other is null) &&
+            this.Constant == other.Constant &&
+            this.Description == other.Description &&
+            this.Sentence == other.Sentence;
+
+        /// <inheritdoc/>
+        public override int GetHashCode()
+        {
+            var hash = HashCodeSeed;
+            EquatableUtilities.Combine(ref hash, this.Constant);
+            EquatableUtilities.Combine(ref hash, this.Description);
+            EquatableUtilities.Combine(ref hash, this.Sentence);
+            return hash;
+        }
 
         /// <inheritdoc/>
         public override void ToString(StringBuilder sb)

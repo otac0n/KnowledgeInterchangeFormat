@@ -8,8 +8,10 @@ namespace KnowledgeInterchangeFormat.Expressions
     /// <summary>
     /// A <see cref="Sentence"/> invloving the <c>=</c> operator.
     /// </summary>
-    public class Equation : Sentence
+    public class Equation : Sentence, IEquatable<Equation>
     {
+        private const int HashCodeSeed = 0x4b0bf0de;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Equation"/> class.
         /// </summary>
@@ -30,6 +32,23 @@ namespace KnowledgeInterchangeFormat.Expressions
         /// Gets the right side of the equation.
         /// </summary>
         public Term Right { get; }
+
+        /// <inheritdoc/>
+        public override bool Equals(Expression other) => other is Equation equation && this.Equals(equation);
+
+        /// <inheritdoc/>
+        public bool Equals(Equation other) => !(other is null) &&
+            this.Left == other.Left &&
+            this.Right == other.Right;
+
+        /// <inheritdoc/>
+        public override int GetHashCode()
+        {
+            var hash = HashCodeSeed;
+            EquatableUtilities.Combine(ref hash, this.Left);
+            EquatableUtilities.Combine(ref hash, this.Right);
+            return hash;
+        }
 
         /// <inheritdoc />
         public override void ToString(StringBuilder sb)
