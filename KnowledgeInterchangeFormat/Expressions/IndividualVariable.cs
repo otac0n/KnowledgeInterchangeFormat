@@ -2,10 +2,12 @@
 
 namespace KnowledgeInterchangeFormat.Expressions
 {
+    using System;
+
     /// <summary>
     /// An individual variable.
     /// </summary>
-    public class IndividualVariable : Variable
+    public class IndividualVariable : Variable, IEquatable<IndividualVariable>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="IndividualVariable"/> class.
@@ -16,5 +18,11 @@ namespace KnowledgeInterchangeFormat.Expressions
             : base(id, name)
         {
         }
+
+        /// <inheritdoc />
+        public override bool Equals(Expression other) => other is IndividualVariable individualVariable && this.Equals(individualVariable);
+
+        /// <inheritdoc />
+        public bool Equals(IndividualVariable other) => !(other is null) && this.Id == other.Id;
     }
 }

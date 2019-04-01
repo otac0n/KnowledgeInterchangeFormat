@@ -2,10 +2,12 @@
 
 namespace KnowledgeInterchangeFormat.Expressions
 {
+    using System;
+
     /// <summary>
     /// Represents an operator.
     /// </summary>
-    public class Operator : WordTerm
+    public class Operator : WordTerm, IEquatable<Operator>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="Operator"/> class.
@@ -16,5 +18,11 @@ namespace KnowledgeInterchangeFormat.Expressions
             : base(id, name)
         {
         }
+
+        /// <inheritdoc />
+        public override bool Equals(Expression other) => other is Operator @operator && this.Equals(@operator);
+
+        /// <inheritdoc />
+        public bool Equals(Operator other) => !(other is null) && this.Id == other.Id;
     }
 }

@@ -2,10 +2,12 @@
 
 namespace KnowledgeInterchangeFormat.Expressions
 {
+    using System;
+
     /// <summary>
     /// A constant <see cref="Term"/>.
     /// </summary>
-    public class Constant : WordTerm
+    public class Constant : WordTerm, IEquatable<Constant>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="Constant"/> class.
@@ -16,5 +18,11 @@ namespace KnowledgeInterchangeFormat.Expressions
             : base(id, name)
         {
         }
+
+        /// <inheritdoc />
+        public override bool Equals(Expression other) => other is Constant constant && this.Equals(constant);
+
+        /// <inheritdoc />
+        public bool Equals(Constant other) => !(other is null) && this.Id == other.Id;
     }
 }

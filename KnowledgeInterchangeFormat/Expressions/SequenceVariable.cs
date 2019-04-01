@@ -2,10 +2,12 @@
 
 namespace KnowledgeInterchangeFormat.Expressions
 {
+    using System;
+
     /// <summary>
     /// A sequence variable.
     /// </summary>
-    public class SequenceVariable : Variable
+    public class SequenceVariable : Variable, IEquatable<SequenceVariable>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="SequenceVariable"/> class.
@@ -16,5 +18,11 @@ namespace KnowledgeInterchangeFormat.Expressions
             : base(id, name)
         {
         }
+
+        /// <inheritdoc />
+        public override bool Equals(Expression other) => other is SequenceVariable sequenceVariable && this.Equals(sequenceVariable);
+
+        /// <inheritdoc />
+        public bool Equals(SequenceVariable other) => !(other is null) && this.Id == other.Id;
     }
 }
