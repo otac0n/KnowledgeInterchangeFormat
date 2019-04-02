@@ -3,20 +3,6 @@
 @using System.Linq
 @using KnowledgeInterchangeFormat.Expressions
 @start knowledgeBase
-@members
-{
-    private static readonly HashSet<string> operators = new HashSet<string>
-    {
-        // termop
-        "VALUE", "LISTOF", "QUOTE", "IF", "COND",
-
-        // sentop
-        "HOLDS", "=", "/=", "NOT", "AND", "OR", "=>", "<=", "<=>", "FORALL", "EXISTS",
-
-        // defop
-        "DEFOBJECT", "DEFFUNCTION", "DEFRELATION", "DEFLOGICAL", ":=", ":->", ":<=", ":=>",
-    };
-}
 
 character = [\0-\x7F]
 int <int> = d:("" digit+) { int.Parse(d) }
@@ -59,8 +45,8 @@ variable <Variable> = indvar / seqvar
 indvar <IndividualVariable> = n:word &{ n.Item1.StartsWith("?") } { new IndividualVariable(n.Item1, n.Item2) }
 seqvar <SequenceVariable> = n:word &{ n.Item1.StartsWith("@") } { new SequenceVariable(n.Item1, n.Item2) }
 
-operator <Operator> = w:word &{ operators.Contains(w.Item1) } { new Operator(w.Item1, w.Item2) }
-constant <Constant> = ![?@] w:word !{ operators.Contains(w.Item1) } { new Constant(w.Item1, w.Item2) }
+operator <Operator> -memoize = w:word &{ this.operators.Contains(w.Item1) } { new Operator(w.Item1, w.Item2) }
+constant <Constant> = ![?@] w:word !{ this.operators.Contains(w.Item1) } { new Constant(w.Item1, w.Item2) }
 
 term <Term> = indvar / constant / charref / string / block / funterm / listterm / quoterm / logterm
 
