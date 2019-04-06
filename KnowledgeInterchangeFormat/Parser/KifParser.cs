@@ -22,57 +22,57 @@ namespace KnowledgeInterchangeFormat
         /// <param name="options">The parsing options.</param>
         public KifParser(Options options)
         {
-            operators.Add("NOT");
-            operators.Add("AND");
-            operators.Add("OR");
-            operators.Add("=>");
-            operators.Add("<=");
-            operators.Add("<=>");
+            this.operators.Add("NOT");
+            this.operators.Add("AND");
+            this.operators.Add("OR");
+            this.operators.Add("=>");
+            this.operators.Add("<=");
+            this.operators.Add("<=>");
 
             if (options.ExplicitOperators)
             {
-                operators.Add("VALUE");
-                operators.Add("HOLDS");
+                this.operators.Add("VALUE");
+                this.operators.Add("HOLDS");
             }
 
             if (options.ListOperator)
             {
-                operators.Add("LISTOF");
+                this.operators.Add("LISTOF");
             }
 
             if (options.QuoteOperator)
             {
-                operators.Add("QUOTE");
+                this.operators.Add("QUOTE");
             }
 
             if (options.LogicalOperators)
             {
-                operators.Add("IF");
-                operators.Add("COND");
+                this.operators.Add("IF");
+                this.operators.Add("COND");
             }
 
             if (options.EqualityOperators)
             {
-                operators.Add("=");
-                operators.Add("/=");
+                this.operators.Add("=");
+                this.operators.Add("/=");
             }
 
             if (options.QuantifiedOperators)
             {
-                operators.Add("FORALL");
-                operators.Add("EXISTS");
+                this.operators.Add("FORALL");
+                this.operators.Add("EXISTS");
             }
 
             if (options.DefinitionOperators)
             {
-                operators.Add("DEFOBJECT");
-                operators.Add("DEFFUNCTION");
-                operators.Add("DEFRELATION");
-                operators.Add("DEFLOGICAL");
-                operators.Add(":=");
-                operators.Add(":->");
-                operators.Add(":<=");
-                operators.Add(":=>");
+                this.operators.Add("DEFOBJECT");
+                this.operators.Add("DEFFUNCTION");
+                this.operators.Add("DEFRELATION");
+                this.operators.Add("DEFLOGICAL");
+                this.operators.Add(":=");
+                this.operators.Add(":->");
+                this.operators.Add(":<=");
+                this.operators.Add(":=>");
             }
         }
 
