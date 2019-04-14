@@ -25,7 +25,7 @@ namespace KnowledgeInterchangeFormat
             $"/// <param name=\"{lowerFirst(name).TrimStart('@')}\">The <see cref=\"{name}\"/> to walk.</param>".Dump();
             $"public virtual void Walk({name} {lowerFirst(name)})".Dump();
             "{".Dump();
-            if (type.IsAbstract)
+            if (descendents[type].Any())
             {
                 $"    switch ({lowerFirst(name)})".Dump();
                 "    {".Dump();
@@ -33,37 +33,57 @@ namespace KnowledgeInterchangeFormat
                 {
                     $"        case {descendent.Name} {lowerFirst(descendent.Name)}:".Dump();
                     $"            this.Walk({lowerFirst(descendent.Name)});".Dump();
-                    "            break;".Dump();
+                    if (!type.IsAbstract)
+                    {
+                        "            return;".Dump();
+                    }
+                    else
+                    {
+                        "            break;".Dump();
+                    }
                 }
                 "    }".Dump();
             }
-            else if (type.Name == "CharacterString" || type.Name == "CharacterBlock")
+
+            if (type.Name == "CharacterString" || type.Name == "CharacterBlock")
             {
                 // These types are special cases of Lists that can be considered atomic.
             }
-            else
+            else if(!type.IsAbstract)
             {
-                var constructorParams = type.GetConstructors().OrderByDescending(c => c.GetParameters().Length).First().GetParameters().Select(p => p.Name.ToUpperInvariant()).ToList();
+                var constructor = type.GetConstructors().OrderByDescending(c => c.GetParameters().Length).First();
+                var constructorParams = constructor.GetParameters();
+                var constructorParamNames = constructorParams.Select(p => p.Name.ToUpperInvariant()).ToList();
+                var properties = (from p in type.GetProperties()
+                                  where p.DeclaringType == type || !type.GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.Instance).Any(d => d.Name == p.Name)
+                                  orderby (uint)constructorParamNames.IndexOf(p.Name.ToUpperInvariant())
+                                  select new
+                                  {
+                                      p.Name,
+                                      Type = p.PropertyType,
+                                      Var = lowerFirst(p.Name),
+                                  }).ToList();
+                var walkableProperties = properties.Where(p => expressionType.IsAssignableFrom(p.Type) || enumerableType.IsAssignableFrom(p.Type));
                 var first = true;
-                foreach (var property in type.GetProperties().Where(p => p.DeclaringType == type || !type.GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.Instance).Any(d => d.Name == p.Name)).OrderBy(p => (uint)constructorParams.IndexOf(p.Name.ToUpperInvariant())))
+                foreach (var property in walkableProperties)
                 {
                     if (!first) "".Dump();
-                    if (expressionType.IsAssignableFrom(property.PropertyType))
+                    if (expressionType.IsAssignableFrom(property.Type))
                     {
                         first = false;
                         $"    if ({lowerFirst(name)}.{property.Name} != null)".Dump();
                         "    {".Dump();
-                        $"        this.Walk({(property.PropertyType == expressionType ? "" : "(Expression)")}{lowerFirst(name)}.{property.Name});".Dump();
+                        $"        this.Walk({(property.Type == expressionType ? "" : "(Expression)")}{lowerFirst(name)}.{property.Name});".Dump();
                         "    }".Dump();
                     }
-                    else if (enumerableType.IsAssignableFrom(property.PropertyType))
+                    else if (enumerableType.IsAssignableFrom(property.Type))
                     {
                         first = false;
-                        var subType = property.PropertyType.GetInterfaces().Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>)).Single().GenericTypeArguments.Single();
+                        var subType = property.Type.GetInterfaces().Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>)).Single().GenericTypeArguments.Single();
                         var subTypeName = subType == type ? "sub" + type.Name : lowerFirst(subType.Name);
                         $"    if ({lowerFirst(name)}.{property.Name} != null)".Dump();
                         "    {".Dump();
-                        $"        foreach(var {subTypeName} in {lowerFirst(name)}.{property.Name})".Dump();
+                        $"        foreach (var {subTypeName} in {lowerFirst(name)}.{property.Name})".Dump();
                         "        {".Dump();
                         $"            this.Walk({(subType == expressionType ? "" : "(Expression)")}{subTypeName});".Dump();
                         "        }".Dump();
@@ -520,6 +540,13 @@ namespace KnowledgeInterchangeFormat
         /// <param name="implication">The <see cref="Implication"/> to walk.</param>
         public virtual void Walk(Implication implication)
         {
+            switch (implication)
+            {
+                case ReverseImplication reverseImplication:
+                    this.Walk(reverseImplication);
+                    return;
+            }
+
             if (implication.Antecedents != null)
             {
                 foreach (var sentence in implication.Antecedents)
@@ -645,6 +672,16 @@ namespace KnowledgeInterchangeFormat
         /// <param name="listTerm">The <see cref="ListTerm"/> to walk.</param>
         public virtual void Walk(ListTerm listTerm)
         {
+            switch (listTerm)
+            {
+                case CharacterBlock characterBlock:
+                    this.Walk(characterBlock);
+                    return;
+                case CharacterString characterString:
+                    this.Walk(characterString);
+                    return;
+            }
+
             if (listTerm.Items != null)
             {
                 foreach (var term in listTerm.Items)
