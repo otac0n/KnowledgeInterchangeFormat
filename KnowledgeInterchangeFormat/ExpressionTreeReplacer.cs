@@ -2,7 +2,6 @@
 
 namespace KnowledgeInterchangeFormat
 {
-    using System;
     using System.Collections.Immutable;
     using KnowledgeInterchangeFormat.Expressions;
 

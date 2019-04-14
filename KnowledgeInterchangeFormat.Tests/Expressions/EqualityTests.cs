@@ -125,7 +125,7 @@ namespace KnowledgeInterchangeFormat.Tests.Expressions
                 }
             }
 
-            return Activator.CreateInstance(type, MakeArguments(type, ix, out var constructor));
+            return Activator.CreateInstance(type, MakeArguments(type, ix, out _));
         }
 
         private static object[] MakeArguments(Type type, int ix, out ConstructorInfo constructor)

@@ -7,7 +7,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <TargetFrameworks>net45;netcoreapp2.0</TargetFrameworks>
-    <Description />
+    <Description>An implementation of the KIF specification at http://www.ksl.stanford.edu/knowledge-sharing/kif/</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/otac0n/KnowledgeInterchangeFormat</PackageProjectUrl>
     <PackageTags />
