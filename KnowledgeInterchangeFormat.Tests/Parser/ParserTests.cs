@@ -20,6 +20,8 @@ namespace KnowledgeInterchangeFormat.Tests.Parser
         {
             new object[] { "(holds x)", new ImplicitRelationalSentence(new Constant("HOLDS"), new[] { new Constant("X") }, null) },
             new object[] { "(ok (value x))", new ImplicitRelationalSentence(new Constant("OK"), new[] { new ImplicitFunctionalTerm(new Constant("VALUE"), new[] { new Constant("X") }, null) }, null) },
+            new object[] { "holds", new ConstantSentence(new Constant("HOLDS")) },
+            new object[] { "value", new ConstantSentence(new Constant("VALUE")) },
         };
 
         public static IEnumerable<object[]> CanonicalExpressions => new List<object[]>
